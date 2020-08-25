@@ -1,28 +1,45 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+<template lang="pug">
+	#app
+		Header(:breadcrumbs='breadcrumbs')
+		.hero
+			Sidebar(:routes='routes')
+			router-view#main
+		Footer
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Header from '@/components/_header'
+import Sidebar from '@/components/_sidebar'
+import Footer from '@/components/_footer'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
+		Header,
+		Sidebar,
+		Footer
+	},
+	data() {
+		return {
+			breadcrumbs: this.$router.currentRoute.meta.breadcrumbs,
+			routes: this.$router.options.routes
+		}
+	}
 }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style lang="sass">
+@import "@/sass/main.sass"
+
+#app
+	// @include flex(space-between, inherit, column)
+	height: 100vh
+
+	&>.hero
+		@include flex(flex-start, flex-start)
+
+		#main 
+			height: 100vh
+			width: 100%
+			background-color: rgba(0, 0, 0, 0.5)
 </style>

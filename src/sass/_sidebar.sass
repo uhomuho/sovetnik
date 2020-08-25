@@ -1,0 +1,39 @@
+#aside
+	@include flex(flex-start, center, column)
+	height: 100vh
+	width: 8.125rem
+	background-color: $grey
+
+	.aside-item
+		@include flex(flex-start, center, column)
+		width: 100%
+		padding: 2.125rem 1.5rem 1.5rem
+		position: relative
+		
+		&::before
+			display: block
+			content: ""
+			position: absolute
+			left: 0
+			top: 0
+			bottom: 0
+			height: 100%
+			width: 0px
+			margin: auto 0
+			background-color: $graphite4
+			transition: width .2s ease-in-out
+
+		&:hover::before
+			width: 10px
+			
+		&.router-link-active::before
+			width: 10px
+			background-color: $blue4
+
+		img
+			height: 2.5rem
+			margin-bottom: .85rem
+
+		p
+			font-size: $normalFont
+			color: $graphite4

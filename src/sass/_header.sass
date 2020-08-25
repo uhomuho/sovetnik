@@ -1,0 +1,25 @@
+nav
+	padding: 1.25rem 2.5rem
+	background-color: $dark!important
+
+	.navbar-brand
+		min-height: unset
+
+		img
+			height: 2.5rem
+	
+	.navbar-start
+		margin-left: 3.5rem
+
+		a.navbar-item
+			&:hover
+				background-color: transparent
+
+			.breadcrumb
+				li
+					&+li
+						&::before
+							content: ">"
+
+					a 
+						color: #fff
