@@ -32,14 +32,20 @@ export default {
 @import "@/sass/main.sass"
 
 #app
-	// @include flex(space-between, inherit, column)
+	@include flex(space-between, inherit, column)
 	height: 100vh
 
 	&>.hero
 		@include flex(flex-start, flex-start)
+		flex-grow: 1
 
 		#main 
-			height: 100vh
+			height: 100%
 			width: 100%
-			background-color: rgba(0, 0, 0, 0.5)
+			overflow: scroll
+			-ms-overflow-style: none
+			scrollbar-width: none
+			
+			&::-webkit-scrollbar
+				display: none
 </style>

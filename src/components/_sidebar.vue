@@ -9,10 +9,7 @@
 
 export default {
 	name: 'Sidebar',
-	props: ['routes'],
-	mounted() {
-		console.log(this.routes)
-	}
+	props: ['routes']
 }
 
 </script>

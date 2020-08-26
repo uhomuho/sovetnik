@@ -1,0 +1,47 @@
+#reports_table
+	.table-container
+		-ms-overflow-style: none
+		scrollbar-width: none
+		
+		&::-webkit-scrollbar
+			display: none
+		.table
+			color: $graphite4
+			
+			th
+				font-size: 1rem
+				font-weight: normal
+				padding: .9rem 1.25rem
+
+				&:nth-of-type(2)
+					text-align: center
+				
+				&:last-of-type
+					text-align: center
+			
+			td
+				font-size: $normalFont
+				font-weight: bold
+				line-height: 17px
+				padding: 1rem 1.25rem
+				border-color: $grey2
+
+				&.car
+					width: 30%
+
+				&.gsm
+					width: 40%
+					td
+						width: 25%
+						text-align: center
+
+				&.mileage
+					width: 30%
+					td
+						width: 33.3333%
+						&:first-of-type
+							text-align: right
+						&:nth-of-type(2)
+							text-align: center
+						&:last-of-type
+							text-align: right

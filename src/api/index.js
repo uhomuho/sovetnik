@@ -1,0 +1,35 @@
+import axios from 'axios'
+import config from '../../public/config.json'
+import { ToastProgrammatic as Toast } from 'buefy'
+
+axios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
+
+export default () => {
+	const url = config.url,
+				axiosInstance = axios.create({
+					baseURL: `https://uhomuhoproxy.herokuapp.com/${url}`
+				}),
+				isHandlerEnabled = (config = {}) => !config.handlerEnabled,
+				errorHandler = error => {
+					if (isHandlerEnabled(error.config)) {
+						Toast.open({
+							message: 'Ошибка!',
+							type: 'is-danger',
+							position: 'is-bottom-right',
+							queue: false
+						})
+					}
+					return Promise.reject(error)
+				},
+				successHandler = response => {
+					return response
+				}
+
+	axiosInstance.interceptors.response.use(
+		response => successHandler(response),
+		error => errorHandler(error)
+	)
+
+	return axiosInstance
+}

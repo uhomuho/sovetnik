@@ -1,6 +1,7 @@
-nav
+nav.navbar
 	padding: 1.25rem 2.5rem
 	background-color: $dark!important
+	min-height: 5rem
 
 	.navbar-brand
 		min-height: unset
@@ -12,8 +13,10 @@ nav
 		margin-left: 3.5rem
 
 		a.navbar-item
-			&:hover
+			&:hover,
+			&:focus
 				background-color: transparent
+				outline: none
 
 			.breadcrumb
 				li
