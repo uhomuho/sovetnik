@@ -1,0 +1,112 @@
+#reports_table
+	.container
+		span.subtitle
+			margin-bottom: 2rem
+			display: block
+		.table-container
+			-ms-overflow-style: none
+			scrollbar-width: none
+			min-height: 15rem
+			margin-bottom: 0
+			
+			&::-webkit-scrollbar
+				display: none
+			
+			.table
+				font-size: 0.875rem
+				color: $graphite4
+
+				.id
+					width: 7.5%
+					min-width: 7.5%
+					border-right: 1px dashed $graphite1
+				.car
+					width: 25%
+					min-width: 25%
+					border-right: 1px dashed $graphite1
+				.start
+					width: 10.5%
+					min-width: 10.5%
+				.finish
+					width: 14.5%
+					min-width: 14.5%
+					border-right: 1px dashed $graphite1
+				.task
+					text-align: center
+					width: 16%
+					min-width: 16%
+					border-right: 1px dashed $graphite1
+				.driver
+					width: 16%
+					min-width: 16%
+					border-right: 1px dashed $graphite1
+
+				thead
+					background-color: $grey2
+					box-shadow: 0 1px 0 $grey2
+
+					th
+						font-weight: normal
+						color: $graphite4
+						vertical-align: middle
+
+						&.car
+							font-weight: bold
+
+					th.start, th.finish
+						text-align: center
+						span
+							font-size: .625rem
+							display: block
+							margin-top: -.3rem
+
+				tbody
+					&>tr
+						mix-blend-mode: multiply
+						box-shadow: 0px 1px 0px $grey2
+						cursor: pointer
+						&:hover
+							background-color: $lineHover
+						&.selected
+							background-color: $lineHover
+						td
+							vertical-align: middle
+
+							&.car
+								table
+									background: transparent
+									td
+										&:first-of-type
+											padding-right: .3rem
+										&:last-of-type
+											font-family: 'Cabin', sans-serif
+											font-size: 1rem
+											text-align: right
+											padding-left: .3rem
+
+							&.task
+								font-size: .625rem
+
+							&.driver
+								font-size: .625rem
+
+						td.start, td.finish
+							font-size: .75rem
+							text-align: center
+							span
+								font-size: .625rem
+		.open
+			display: block
+			margin-bottom: 2rem
+			width: 100%
+
+			.button
+				font-size: .875rem
+				font-weight: bold
+				color: #fff
+				width: 100%
+				background-color: $blue2
+				mix-blend-mode: multiply
+				box-shadow: 0 1px 0 $grey2
+				border: none
+				border-radius: 0								

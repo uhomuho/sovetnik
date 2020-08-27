@@ -30,13 +30,13 @@ export default new Router({
 					}
 				]
 			},
-			redirect: '/analitycs',
+			redirect: '/waybills',
 		},
 		{
 			path: '/analitycs',
 			name: 'Отчёт по сменам',
 			component: Reports,
-			hidden: false,
+			hidden: true,
 			meta: {
 				breadcrumbs: [
 					{
@@ -75,9 +75,9 @@ export default new Router({
 		},
 		{
 			path: '/waybills',
-			name: 'Оператор',
+			name: 'Путевые листы',
 			component: Waybills,
-			hidden: true,
+			hidden: false,
 			meta: {
 				breadcrumbs: [
 					{
@@ -86,7 +86,7 @@ export default new Router({
 					},
 					{
 						to: '/waybills',
-						text: 'Оператор'
+						text: 'Путевые листы'
 					}
 				]
 			}
@@ -104,18 +104,18 @@ export default new Router({
 					},
 					{
 						to: '/waybills',
-						text: 'Оператор'
+						text: 'Путевые листы'
 					},
 					{
 						to: '/waybills/create',
-						text: 'Открытие маршрутного листа'
+						text: 'Открытие путевого листа'
 					}
 				]
 			}
 		},
 		{
 			path: '/waybills/close/:id',
-			name: 'Закрытие маршрутного листа',
+			name: 'Закрытие путевого листа',
 			component: Close,
 			hidden: true,
 			props: true,
@@ -131,14 +131,14 @@ export default new Router({
 					},
 					{
 						to: '/waybills/close/:id',
-						text: 'Закрытие маршрутного листа'
+						text: 'Закрытие путевого листа'
 					}
 				]
 			}
 		},
 		{
 			path: '*',
-			redirect: '/analitycs',
+			redirect: '/waybills',
 			hidden: true
 		},
 	]
