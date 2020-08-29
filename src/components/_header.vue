@@ -1,7 +1,7 @@
 <template lang="pug">
 	b-navbar
 		template( slot="brand" )
-			img( src="@/assets/icons/logo.svg" )
+			img( src="../../src/assets/icons/logo.svg" )
 		template( slot="start" )
 			b-navbar-item
 				//- .breadcrumb( aria-label="breadcrumbs" )

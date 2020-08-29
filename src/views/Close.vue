@@ -61,7 +61,7 @@ div#main
 							td 
 								span {{ waybill.mileageStart.toLocaleString() }}
 							td 
-								span {{ waybill.start }}
+								span {{ getTimeStringStart }}
 							td 
 								span {{ waybill.fuelStart }}
 						tr
@@ -75,7 +75,7 @@ div#main
 							td 
 								span {{ waybill.finish }}
 							td 
-								span {{ waybill.fuelFinish }}	
+								span {{ getTimeStringFinish }}	
 						tr
 							td.title Общий пробег/расход
 							td 
