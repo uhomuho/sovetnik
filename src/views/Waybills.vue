@@ -55,6 +55,7 @@
 								@input='setFrom(range.dateFrom), waybillsSort()'
 								v-model='range.dateFrom'
 								:focused-date='dateFrom'
+								:max-date='dateTo'
 								loacale="ru-RU"
 								:mobile-native='true'
 								position='is-bottom-left')
@@ -66,6 +67,7 @@
 								@input='setTo(range.dateTo), waybillsSort()'
 								v-model='range.dateTo'
 								:focused-date='range.dateTo'
+								:min-date='dateFrom'
 								loacale="ru-RU"
 								:mobile-native='true'
 								position='is-bottom-left')
@@ -111,12 +113,12 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
+		...mapGetters('waybills', {
 			waybillsSortData: 'waybillsSortData',
 			total: 'total',
 			filterType: 'getFilterType'
 		}),
-		...mapState({
+		...mapState('waybills', {
 			dateTo: state => state.dateTo,
 			dateFrom: state => state.dateFrom
 		}),
@@ -128,13 +130,12 @@ export default {
 		}
 	},
 	methods: {
-		...mapActions([
+		...mapActions('waybills', [
 			'waybillsSort',
 			'getWaybills',
-			'waybillsSort',
 			'setDates'
 		]),
-		...mapMutations({
+		...mapMutations('waybills', {
 			setTo: 'dateTo',
 			setFrom: 'dateFrom',
 			setFilter: 'setFilterType'
@@ -142,12 +143,14 @@ export default {
 	},
 	mounted() {
 
-		this.isLoading = true
-		this.getWaybills()
-			.then(() => {
-				this.waybillsSort()
-					.then(() => this.isLoading = false)
-			})
+		if (!this.waybillsSortData) {
+			this.isLoading = true
+			this.getWaybills()
+				.then(() => {
+					this.waybillsSort()
+						.then(() => this.isLoading = false)
+				})
+		}
 	},
 	beforeMount() {
 		this.setDates()

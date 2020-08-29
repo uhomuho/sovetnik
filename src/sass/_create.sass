@@ -1,0 +1,134 @@
+#create
+	.section
+		padding-top: 6rem
+		padding-left: 5rem
+		padding-right: 5rem
+
+		&>.level
+			margin-bottom: 0
+			align-items: flex-end
+			h1 
+				margin-bottom: 0
+			.level
+				.level-item
+					@include flex(flex-end, flex-end)
+					font-size: 2.25rem
+					color: $graphite6
+					line-height: 33px
+					span
+						font-size: 3rem
+						color: $blue5
+						line-height: 40px
+						display: inline-block
+						margin-left: .5rem
+				.level-right
+					margin-left: 1.5rem
+		
+			&+hr
+				margin: 1rem 0 2.5rem
+				background-color: $graphite6
+		
+		.tile.is-ancestor
+			.tile
+				@include flex(flex-start, flex-start, column)
+
+				&:first-of-type
+					flex: none
+					width: 45%
+
+				&:last-of-type
+					@include flex(center, center)
+					padding: .5rem .5rem
+
+				.level
+					width: 100%
+					.level-left
+						margin-right: .75rem
+					.level-right
+						flex-grow: 1
+						.level-item
+							width: 100%
+							justify-content: flex-start
+							border-bottom: 1px solid $grey2
+							position: relative
+
+							span
+								font-size: 1.125rem
+								line-height: 22px
+								color: $blue4
+								&.placeholder
+									color: $grey4
+								&.hint
+									font-size: .625rem
+									line-height: 12px
+									color: $grey4
+									position: absolute
+									top: 100%
+									left: 0
+
+							.dropdown
+								width: 100%
+
+								&.is-active
+									img.icon
+										transform: rotate(180deg)
+
+								.dropdown-trigger
+									width: 100%
+
+						.wrapper
+							&.is-active
+								img.icon
+									transform: rotate(180deg)
+
+							@include flex(space-between, flex-end)
+							width: 100%
+							position: relative
+							cursor: pointer
+							img.icon
+								height: .5rem
+								position: absolute
+								right: .2rem
+								top: 0
+								bottom: 0
+								margin: auto 0
+								transition: transform .3s ease-in-out
+						
+							&+.calendar
+								position: absolute
+								top: 100%
+								right: 0
+								z-index: 99
+								height: 385px
+								visibility: visible
+								opacity: 1
+								transition: all .3s ease-in-out
+								&.hide
+									visibility: hidden
+									opacity: 0
+
+				hr
+					background-color: $graphite4
+					width: 100%
+		
+			&+hr
+				background-color: $graphite4
+				margin-top: 2rem
+		
+		.task
+			width: 100%
+			span.title
+				font-size: 1.125rem
+				font-weight: normal
+				text-align: left
+				color: $graphite4
+				display: block
+				margin-bottom: 1rem
+			input
+				color: $blue4
+				font-size: 1.125rem
+				width: 100%
+				display: block
+				padding: 1rem 1.5rem
+				&::placeholder
+					color: rgba($graphite4, 0.7)

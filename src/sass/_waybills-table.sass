@@ -6,7 +6,7 @@
 		.table-container
 			-ms-overflow-style: none
 			scrollbar-width: none
-			min-height: 15rem
+			min-height: 14.37rem
 			margin-bottom: 0
 			
 			&::-webkit-scrollbar
@@ -17,6 +17,7 @@
 				color: $graphite4
 
 				.id
+					text-align: center
 					width: 7.5%
 					min-width: 7.5%
 					border-right: 1px dashed $graphite1
@@ -25,15 +26,15 @@
 					min-width: 25%
 					border-right: 1px dashed $graphite1
 				.start
-					width: 10.5%
+					width: 14%
 					min-width: 10.5%
 				.finish
-					width: 14.5%
+					width: 14%
 					min-width: 14.5%
 					border-right: 1px dashed $graphite1
 				.task
 					text-align: center
-					width: 16%
+					width: 13%
 					min-width: 16%
 					border-right: 1px dashed $graphite1
 				.driver
@@ -51,7 +52,27 @@
 						vertical-align: middle
 
 						&.car
-							font-weight: bold
+							.dropdown
+								&:focus
+									outline: none!important
+								&.is-active
+									.icon
+										transform: rotate(180deg)
+								.wrapper
+									@include flex(flex-start, center)
+									border: none
+									user-select: none
+									cursor: pointer
+									span
+										font-size: .875rem
+										font-weight: normal
+										color: $graphite4
+									.icon
+										height: .3rem
+										transition: transform .3s ease-in-out
+								.dropdown-menu
+									.active
+										color: $orange4
 
 					th.start, th.finish
 						text-align: center
@@ -78,9 +99,10 @@
 									td
 										&:first-of-type
 											padding-right: .3rem
+											font-size: .7rem
 										&:last-of-type
 											font-family: 'Cabin', sans-serif
-											font-size: 1rem
+											font-size: .8rem
 											text-align: right
 											padding-left: .3rem
 

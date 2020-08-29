@@ -2,11 +2,27 @@
 	.wrapper#reports_table
 		.container(v-if='waybills[0]')
 			.table-container
-				table.table.is-fullwidth(v-if='')
+				table.table.is-fullwidth
 					thead
 						tr
 							th.id №
-							th.car Машина
+							th.car 
+								b-dropdown( aria-role="list" )
+									.wrapper(slot="trigger")
+										span Машина
+										img.icon( src="@/assets/icons/angle.svg" )
+									b-dropdown-item(
+										aria-role="lsititem"
+										:class='carFilter == null ? "active" : null' 
+										@click='setCarFilter(null), waybillsSort()')
+											span Все
+									b-dropdown-item(
+										aria-role="listitem"
+										v-for='value in filterValues'
+										:key='value'
+										:class='carFilter == value ? "active" : null'
+										@click='setCarFilter(value), waybillsSort()')
+											span {{ value }}
 							th.start 
 								|Выезд,
 								br
@@ -19,7 +35,9 @@
 							th.driver Водитель
 							th.status Статус
 
-					tbody(v-for='waybill in waybills[currentPage - 1]')
+					tbody(
+						v-for='waybill in waybills[currentPage - 1]'
+						@click='goTo(waybill.id)')
 						tr
 							td.id {{ waybill.id }}
 							td.car.is-paddingless
@@ -36,7 +54,7 @@
 								br
 								span {{ waybill.mileageFinish }}
 							td.task {{ waybill.workText }}
-							td.driver {{ waybill.driver }}
+							td.driver {{ waybill.driver.name }}
 							td.status
 			router-link.open(
 				to="/waybills/open")
@@ -59,6 +77,7 @@
 
 <script>
 import monthName from '@/month'
+import { mapMutations, mapGetters, mapActions } from 'vuex'
 
 export default {
 	name: 'Table',
@@ -69,20 +88,35 @@ export default {
 	},
 	props: ['waybills', 'isLoading', 'total'],
 	computed: {
+		...mapGetters('waybills', {
+			filterValues: 'getCarFilterValues',
+			carFilter: 'getCarFilter'
+		}),
 		isEmpty() {
 			return this.waybills == {} ? true : false
 		}
 	},
 	methods: {
+		...mapMutations('waybills', [
+			'setCarFilter'
+		]),
+		...mapActions('waybills', [
+			'waybillsSort'
+		]),
 		noWorkDistance(totalDistance, workDistance) {
 			return (totalDistance - workDistance).toFixed(2)
+		},
+		goTo(id) {
+			// this.$router.push({ path: `/waybills/${id}` })
+			console.log(id)
 		},
 		dateTimeStamp(unix) {
 			let date = new Date(unix),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate(),
-					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours()
+					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
+					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${date.getMinutes()}`
+			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${minutes}`
 		}
 	}
 }

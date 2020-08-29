@@ -6,7 +6,7 @@ Vue.use(Router)
 // Components
 import Login from '@/views/Login'
 import Reports from '@/views/Reports'
-import Report from '@/views/Report'
+import Waybill from '@/views/Waybill'
 import Waybills from '@/views/Waybills'
 import Create from '@/views/Create'
 import Close from '@/views/Close'
@@ -20,17 +20,60 @@ export default new Router({
 			path: '/',
 			name: 'Главная',
 			component: Login,
-			image: 'svg',
+			// image: 'svg',
 			hidden: true,
 			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					}
-				]
+				
 			},
 			redirect: '/waybills',
+		},
+		{
+			path: '/waybills',
+			name: 'Waybills',
+			menuName: 'Путевые листы',
+			component: Waybills,
+			hidden: false,
+			meta: {
+				
+			}
+		},
+		{
+			path: '/waybills/open',
+			name: 'OpenWaybill',
+			menuName: 'Открыть путевой лист',
+			component: Create,
+			hidden: false,
+			meta: {
+			
+			}
+		},
+		{
+			path: '/waybills/close',
+			name: 'CloseWaybill',
+			menuName: 'Закрыть путевой лист',
+			component: Close,
+			hidden: false,
+			props: true,
+			children: [
+				{
+					path: ':id',
+					name: 'CloseWaybillById',
+					menuName: 'Закрыть путевой лист',
+					component: Close,
+					hidden: true,
+					props: true
+				}
+			]
+		},
+		{
+			path: '/waybills/:id',
+			name: 'Аналитика по смене',
+			component: Waybill,
+			hidden: true,
+			props: true,
+			meta: {
+				
+			}
 		},
 		{
 			path: '/analitycs',
@@ -38,102 +81,7 @@ export default new Router({
 			component: Reports,
 			hidden: true,
 			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					},
-					{
-						to: '/analitycs',
-						text: 'Аналитика'
-					}
-				]
-			}
-		},
-		{
-			path: '/reports/:id',
-			name: 'Аналитика по смене',
-			component: Report,
-			hidden: true,
-			props: true,
-			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					},
-					{
-						to: '/reports',
-						text: 'Аналитика'
-					},
-					{
-						to: '/reports/:id',
-						text: 'Аналитика по смене'
-					}
-				]
-			}
-		},
-		{
-			path: '/waybills',
-			name: 'Путевые листы',
-			component: Waybills,
-			hidden: false,
-			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					},
-					{
-						to: '/waybills',
-						text: 'Путевые листы'
-					}
-				]
-			}
-		},
-		{
-			path: '/waybills/create',
-			name: 'Открытие маршрутного листа',
-			component: Create,
-			hidden: true,
-			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					},
-					{
-						to: '/waybills',
-						text: 'Путевые листы'
-					},
-					{
-						to: '/waybills/create',
-						text: 'Открытие путевого листа'
-					}
-				]
-			}
-		},
-		{
-			path: '/waybills/close/:id',
-			name: 'Закрытие путевого листа',
-			component: Close,
-			hidden: true,
-			props: true,
-			meta: {
-				breadcrumbs: [
-					{
-						to: '/',
-						text: 'Главная'
-					},
-					{
-						to: '/waybills',
-						text: 'Оператор'
-					},
-					{
-						to: '/waybills/close/:id',
-						text: 'Закрытие путевого листа'
-					}
-				]
+				
 			}
 		},
 		{

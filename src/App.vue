@@ -1,29 +1,39 @@
 <template lang="pug">
 	#app
-		Header(:breadcrumbs='breadcrumbs')
+		//- Header(:breadcrumbs='breadcrumbs')
 		.hero
-			Sidebar(:routes='routes')
+			Sidebar(:routes='routes', :router='router')
 			router-view#main
-		Footer
 </template>
 
 <script>
-import Header from '@/components/_header'
 import Sidebar from '@/components/_sidebar'
-import Footer from '@/components/_footer'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'App',
   components: {
-		Header,
-		Sidebar,
-		Footer
+		Sidebar
 	},
 	data() {
 		return {
 			breadcrumbs: this.$router.currentRoute.meta.breadcrumbs,
-			routes: this.$router.options.routes
+			routes: this.$router.options.routes,
+			router: this.$router.history.current.path
 		}
+	},
+	methods: {
+		...mapActions('waybills', [
+			'waybillsSort',
+			'getWaybills'
+		])
+	},
+	beforeMount() {
+		this.getWaybills()
+			.then(() => {
+				this.waybillsSort()
+					.then(() => this.isLoading = false)
+			})
 	}
 }
 </script>
@@ -40,7 +50,7 @@ export default {
 		flex-grow: 1
 
 		#main 
-			height: 100%
+			height: 100vh
 			width: 100%
 			overflow: scroll
 			-ms-overflow-style: none
