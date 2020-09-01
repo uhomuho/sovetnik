@@ -24,13 +24,9 @@
 										@click='setCarFilter(value), waybillsSort()')
 											span {{ value }}
 							th.start 
-								|Выезд,
-								br
-								span одометр
+								|Выезд
 							th.finish
-								|Возвращение,
-								br
-								span одометр
+								|Возвращение
 							th.task Задание
 							th.driver Водитель
 							th.status Статус
@@ -39,30 +35,45 @@
 						v-for='waybill in waybills[currentPage - 1]'
 						@click='goTo(waybill.id)')
 						tr
-							td.id {{ waybill.id }}
+							td.id(
+								:class='waybill.status.class') {{ waybill.id }}
 							td.car.is-paddingless
 								table.table.is-fullwidth
 									tr
 										td {{ waybill.car.model }}
 										td.is-lowercase {{ waybill.car.registrationPlate }}
 							td.start 
-								|{{ dateTimeStamp(waybill.start) }}
-								br
-								span {{ waybill.mileageStart }}
+								|{{ waybill.startFact ? dateTimeStamp(waybill.startFact) : null }}
+								span.icon(v-if='waybill.startPlan && waybill.startFact')
+									i.far.fa-calendar-check(
+										:class='waybill.startPlan == waybill.startFact ? "is-success" : "is-danger"')
 							td.finish
-								|{{ waybill.finish ? dateTimeStamp(waybill.finish) : `&nbsp;` }}
-								br
-								span {{ waybill.mileageFinish }}
-							td.task {{ waybill.workText }}
+								|{{ waybill.finishPlan ? dateTimeStamp(waybill.finishPlan) : null }}
+								span.icon(v-if='waybill.finishPlan && waybill.finishFact')
+									i.far.fa-calendar-check(
+										:class='waybill.finishPlan == waybill.finishFact ? "is-success" : "is-danger"')
+							td.task {{ waybill.workText.length <= 40 ? waybill.workText : `${waybill.workText.slice(0, -(waybill.workText.length - 40))}...` }}
 							td.driver {{ waybill.driver.name }}
-							td.status
+							td.status(
+								:class='waybill.status.class') 
+								|{{ waybill.status.text }}
+								router-link(
+									v-if='waybill.status.num == 2'
+									:to='`/waybills/report/${waybill.id}`')
+									img.icon(
+										src="@/assets/icons/waybill-report.svg")
+								router-link(
+									v-if='waybill.status.num == 0'
+									:to='`/waybills/preview/${waybill.id}`')
+									img.icon(
+										src="@/assets/icons/close-waybill.svg")
 			router-link.open(
 				to="/waybills/open")
 				b-button Открыть путевой лист
 
 			b-pagination(
 				:total='total'
-				per-page='4'
+				per-page='7'
 				:simple='true'
 				v-model='currentPage')
 
@@ -116,7 +127,7 @@ export default {
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${minutes}`
+			return `${day}/${monthName.num[date.getMonth()]}, ${hours}:${minutes}`
 		}
 	}
 }

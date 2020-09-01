@@ -263,6 +263,7 @@ export default {
 					padding: .2rem .1rem
 					border-radius: 4px
 					cursor: pointer
+					font-size: .875rem
 					&:hover
 						background-color: rgba($graphite4, .2)
 					&.active

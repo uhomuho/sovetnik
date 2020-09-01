@@ -1,4 +1,5 @@
 <template lang="pug">
+//- blur
 div#main
 	.container#close
 		.section
@@ -195,8 +196,6 @@ export default {
 			} else {
 				document.querySelector('.finish').style.width = `0px`
 			}
-			// this.milleageFinish = this.milleageFinish.replace(/(\d)(?=(\d{3})+([^\d]|$))/g, '$1 ')
-			// console.log(this.milleageFinish)
 		},
 		to(id) {
 			this.$router.push(`/waybills/close/${id}`)

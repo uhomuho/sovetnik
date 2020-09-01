@@ -6,5 +6,14 @@ export default {
 	},
 	getNewWaybill() {
 		return api().get('waybill/open.json')
+	},
+	getDrivers(keyword) {
+		return api().get(`drivers.json?keyword=${keyword}`)
+	},
+	getPlates(keyword) {
+		return api().get(`car.json?keyword=${keyword}`)
+	},
+	getLastWb(params) {
+		return api().get(`waybill/last.json?serial=${params.serial}&status=CLOSE`)
 	}
 }

@@ -16,11 +16,16 @@ div
 							.level-left
 								.level-item
 									|№
-									span {{ waybill.id }}
+									input.id( 
+										v-model='waybill.id'
+										type="number")
 							.level-right
 								.level-item
 									|от
-									span {{ dateStringOf }}
+									span.date-of(@click='openOf') {{ dateStringOf }}
+									Calendar( 
+										@select='selectOf'
+										:class='ofTime ? null : "hide"')
 			hr
 			.tile.is-ancestor.is-marginless
 				.tile
@@ -35,13 +40,16 @@ div
 									:scrollable='true',
 									max-height="400")
 									.wrapper( slot="trigger" )
-										span.placeholder(v-if='!registrationPlate') Гос. номер
-										span(v-else) {{ registrationPlate }}
+										input.plate(
+											@keyup='filterPlates'
+											v-model='registrationPlate'
+											placeholder="Гос. номер")
 										img.icon( src="@/assets/icons/angle-4.svg" )
 
 									b-dropdown-item(
+										v-if='registrationPlate'
 										v-for='car in listCar'
-										@click='setRegistrationPlate(car.registrationPlate)'
+										@click='setRegistrationPlate(car), getLastWb()'
 										:class='car.registrationPlate == registrationPlate') {{ car.registrationPlate }}
 
 					.level
@@ -51,13 +59,18 @@ div
 						.level-right
 							.level-item
 								b-dropdown(
-									aria-role="list")
+									aria-role="list"
+									:scrollable='true'
+									max-height="400")
 									.wrapper( slot="trigger" )
-										span.placeholder(v-if='!driver') Водитель
-										span(v-else) {{ driver.name }}
+										input.driver(
+											@keyup="filterDriver" 
+											v-model="driver"
+											placeholder="Водитель")
 										img.icon( src="@/assets/icons/angle-4.svg")
 
 									b-dropdown-item(
+										v-if='driver'
 										v-for='driver in listDrivers'
 										@click='setDriver(driver)'
 										:class='driver.id == driver ? "is-active" : null') {{ driver.name }}
@@ -71,8 +84,8 @@ div
 									@click='openStart'
 									:class='startTime ? "is-active" : null')
 									span(
-										v-html='waybillData.start ? dateTimeStringStart : "XX/XX/XX, XX:XX"'
-										:class='waybillData.start ? null : "placeholder"')
+										v-html='waybill.startPlan ? dateTimeStringStart : "XX/XX/XX, XX:XX"'
+										:class='waybill.startPlan ? null : "placeholder"')
 									img.icon( src="@/assets/icons/angle-4.svg" )
 
 								Calendar( 
@@ -89,8 +102,8 @@ div
 									@click='openFinish'
 									:class='finishTime ? "is-active" : null')
 									span(
-										v-html='waybillData.finish ? dateTimeStringFinish : "XX/XX/XX, XX:XX"'
-										:class='waybillData.finish ? null : "placeholder"')
+										v-html='waybill.finishPlan ? dateTimeStringFinish : "XX/XX/XX, XX:XX"'
+										:class='waybill.finishPlan ? null : "placeholder"')
 									img.icon( src="@/assets/icons/angle-4.svg" )
 
 								Calendar( 
@@ -105,9 +118,11 @@ div
 								span Спидометр:
 						.level-right
 							.level-item
-								span(v-if='waybill.milleageFinish') {{ waybill.milleageFinish }}
-								span(v-else) 116,58
-								span.hint (показание предыдущей смены)
+								input(
+									v-model='sendData.mileageStart'
+									placeholder="Спидометр в начале смены")
+								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
+								span.hint(v-else) (показание предыдущей смены)
 					
 					.level
 						.level-left
@@ -115,9 +130,11 @@ div
 								span Остаток при выдаче:
 						.level-right
 							.level-item
-								span(v-if='waybill.fuelFinish') {{ waybill.fuelFinish }}
-								span(v-else) 26,14
-								span.hint (показание предыдущей смены)
+								input(
+									v-model='sendData.fuelStart'
+									placeholder="Топливо в начале смены")
+								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
+								span.hint(v-else) (показание предыдущей смены)
 
 				.tile
 					img(src="/img/waybillexample.svg")
@@ -127,7 +144,9 @@ div
 				span.title Задание водителю:
 				input(
 					placeholder="Задание",
-					v-model='waybill.workText')
+					v-model='sendData.workText')
+
+			router-link.button.is-pulled-right(:to='`/waybills/preview/${waybill.id}`') Просмотр
 
 			b-loading(
 				v-if="isLoading"
@@ -142,7 +161,8 @@ div
 <script>
 import monthName from '@/month'
 import Calendar from '@/components/calendar/_calendar'
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
+import api from '@/api/apiActions'
 
 export default {
 	name: 'CreateWaybill',
@@ -153,53 +173,58 @@ export default {
 		return {
 			startTime: false,
 			finishTime: false,
+			ofTime: false,
 			isLoading: false,
-			// waybillData: {
-			// 	id: 36,
-			// 	of: 1598608006254,
-			// 	start: null,
-			// 	finish: null,
-			// 	milleageStart: 0,
-			// 	milleageFinish: 0
-			// },
-			// listDrivers: [
-			// 	{
-			// 		id: 1,
-			// 		name: " Иванов И.И."
-			// 	},
-			// 	{
-			// 		id: 2,
-			// 		name: "Садыков А.Р."
-			// 	}
-			// ],
-			// listCar: [],
+			driverLoad: false,
 			registrationPlate: null,
-			driver: null
+			carSerial: null,
+			driver: null,
+			dreiverId: null,
+			lastWb: null,
+			sendData : {
+				id: this.ID,
+				of: null,
+				serial: null,
+				workText: null,
+				driverId: null,
+				startPlan: null,
+				finishPlan:	null,
+				mileageStart: this.fuelStart ? this.fuelStart : null,
+				fuelStart: this.mileageStart ? this.mileageStart : null
+			}
 		}
 	},
 	computed: {
+		...mapState('waybills', {
+			waybill: state => state.newWaybill
+		}),
 		...mapGetters('waybills', {
-			waybillData: 	'getNewWaybill',
 			listDrivers: 	'getNewListDrivers',
 			listCar: 			'getNewListCar'
 		}),
-		waybill() {
-			return this.waybillData
+		ID() {
+			return this.waybill.id
 		},
 		unixDateStart() {
-			return this.waybillData.start ? new Date(this.waybillData.start).getTime() : null
+			return this.waybill.startPlan ? new Date(this.waybill.start).getTime() : null
 		},
 		unixDateFinish() {
-			return this.waybillData.finish ? new Date(this.waybillData.finish).getTime() : null
+			return this.waybill.finishPlan ? new Date(this.waybill.finishPlan).getTime() : null
 		},
 		dateStringOf() {
-			let date = new Date(this.waybillData.of),
+			let date = new Date(this.waybill.of),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
 					
 			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
 		},
+		fuelStart() {
+			return this.lastWb.fuelStart
+		},
+		mileageStart() {
+			return this.lastWb.mileageStart
+		},
 		dateTimeStringStart() {
-			let date = new Date(this.waybillData.start),
+			let date = new Date(this.waybill.startPlan),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate(),
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
@@ -207,7 +232,7 @@ export default {
 			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()},&nbsp;${hours}:${minutes}`
 		},
 		dateTimeStringFinish() {
-			let date = new Date(this.waybillData.finish),
+			let date = new Date(this.waybill.finishPlan),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate(),
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
@@ -219,39 +244,86 @@ export default {
 		...mapActions('waybills', {
 			getNewWaybill: 'getNewWaybillData'
 		}),
+		...mapMutations('waybills', {
+			setListDrivers: 'setListDrivers',
+			setListCars: 'setListCars'
+		}),
+		async filterDriver() {
+			await api.getDrivers(this.driver)
+				.then(r => {
+					this.setListDrivers(r.data.listDrivers)
+				})
+		},
+		async filterPlates() {
+			await api.getPlates(this.registrationPlate)
+				.then(r => this.setListCars(r.data.listCar))
+		},
+		async getLastWb() {
+			await api.getLastWb({serial: this.carSerial})
+				.then(r => this.lastWb = r.data)
+		},
 		selectStart(data) {
-			this.waybillData.start = data.date
+			this.waybill.startPlan = data.date
+			this.sendData.startPlan = data.date.getTime()
 		},
 		selectFinish(data) {
-			this.waybillData.finish = data.date
+			this.waybill.finishPlan = data.date
+			this.sendData.finishPlan = data.date.getTime()
+		},
+		selectOf(data) {
+			this.sendData.of = data.date.getTime()
+			this.waybill.of = data.date
+		},
+		openOf() {
+			this.ofTime = !this.ofTime
+			this.startTime = false
+			this.finishTime = false
 		},
 		openStart() {
 			this.startTime = !this.startTime
 			this.finishTime = false
+			this.ofTime = false
 		},
 		openFinish() {
 			this.finishTime = !this.finishTime
 			this.startTime = false
+			this.ofTime = false
 		},
 		close(e) {
-			if(!e.target.matches('.date *')) {
+			if(!e.target.matches('.date *') && !e.target.matches('span.date-of')) {
 				if (this.startTime) {
 					this.startTime = false
 				}
 				if (this.finishTime) {
 					this.finishTime = false
 				}
+				if (this.ofTime) {
+					this.ofTime = false
+				}
 			}
 		},
-		setRegistrationPlate(num) {
-			this.registrationPlate = num
+		changeWidthId(target) {
+			if (this.waybill.id) {
+				let width = this.waybill.id.length * 12
+				document.querySelector(target).style.width = `${width}px`
+				// this.milleageFinish = this.milleageFinish.toLocaleString()
+			} else {
+				document.querySelector(target).style.width = `0px`
+			}
+		},
+		setRegistrationPlate(obj) {
+			this.registrationPlate = obj.registrationPlate
+			this.sendData.serial = obj.serial
 		},
 		setDriver(obj) {
-			this.driver = obj
+			this.driver = obj.name
+			this.driverId = obj.id
+			this.sendData.dreiverId = obj.id
 		}
 	},
-	mounted() {
+	beforeMount() {
 		if (!this.waybill) {
+			console.log(this.waybill)
 			this.isLoading = true
 			this.getNewWaybill()
 				.then(() => this.isLoading = false)
