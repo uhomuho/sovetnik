@@ -11,20 +11,23 @@ div#main
 							br
 							|путевой лист
 			
-				.level-right(v-if='!isIntegerId && waybill')
+				.level-right
 					.level-item
 						.level
 							.level-left
 								.level-item
 									|№
-									span {{ id }}
+									input(
+										v-model="id"
+										placeholder="ID"
+										type="number")
 							.level-right
 								.level-item
 									|от
-									span {{ dateStringOf }}
+									span {{ dateStringOf ? dateStringOf : "XX/XX/XXXX" }}
 			hr
 
-			.wrapper(v-if='!isIntegerId && waybill')
+			.wrapper(v-if='waybill')
 				.level
 					.level-left
 						.level-item
@@ -56,13 +59,13 @@ div#main
 							td
 							td
 							td 
-								span {{ waybill.fuelStart.toLocaleString() }}
+								span {{ waybill.fuelVolume.toLocaleString() }}
 						tr
 							td.title Выезд
 							td 
 								span {{ waybill.mileageStart.toLocaleString() }}
 							td 
-								span {{ getTimeStringStart }}
+								span(v-html='dateTimeStringStart')
 							td 
 								span {{ waybill.fuelStart }}
 						tr
@@ -74,45 +77,41 @@ div#main
 									v-model='milleageFinish'
 									placeholder='ЗАПОЛНИ!')
 							td 
-								span {{ waybill.finish }}
+								span(v-html='dateTimeStringFinish')
 							td 
-								span {{ getTimeStringFinish }}	
+								span {{ waybill.fuelFinish }}	
 						tr
 							td.title Общий пробег/расход
 							td 
 								span {{ milleageFinish ? (milleageFinish - waybill.mileageStart > 0 ? (milleageFinish - waybill.mileageStart).toLocaleString() : null ) : null }}
 							td
 							td 
-								span {{ waybill.fuelFinish }}
+								span {{ totalFuel }}
 
 				hr
 
-			.container(v-else)
-				span Выберите путевой лист для закрытия
-				b-dropdown(
-					aria-role="list"
-					:scrollable='true'
-					max-height='400')
-					.wrapper.button( slot="trigger" )
-						span Путевые листы
-						img( src="@/assets/icons/angle.svg" )
+				p.title Выполнение задания:
+				p.subtitle Объект УДС
+				.inputs-wrapper
+					.input-wrapper(v-for='(value, key) in uts')
+						input(v-model='uts[key]')
+						img(
+							src="@/assets/icons/delete.svg"
+							@click='removeUts(key)'
+							v-if='key > 0')
+					img(
+						src="@/assets/icons/add.svg"
+						@click='addUts')
 
-					b-dropdown-item(
-						v-for='waybill in waybills'
-						aria-role="menu-item"
-						@click="to(waybill.id)")
-						|{{ waybill.id }}
-			b-loading(
-				v-if="isLoading"
-				:is-full-page="true"
-				v-model="isLoading")
+				.button.is-pulled-right(@click='closeWb') Закрыть
+
 </template>
 
 <script>
 import monthName from '@/month'
 import { mapGetters, mapActions } from 'vuex'
-// import api from '@/api/apiActions'
-// import { SnackbarProgrammatic as Snackbar } from 'buefy'
+import Calendar from '@/components/calendar/_calendar.vue'
+import api from '@/api/apiActions'
 
 export default {
 	name: 'CreateWaybill',
@@ -121,53 +120,40 @@ export default {
 			startTime: false,
 			finishTime: false,
 			isLoading: false,
-			waybillData: {
-				id: 36,
-				of: 1598608006254,
-				start: null,
-				finish: null,
-				milleageStart: 0,
-				milleageFinish: 0
-			},
-			listDrivers: [
-				{
-					id: 1,
-					name: " Иванов И.И."
-				},
-				{
-					id: 2,
-					name: "Садыков А.Р."
-				}
-			],
-			listCar: [],
-			registrationPlate: null,
-			driver: null,
-			milleageFinish: null
+			id: null,
+			milleageFinish: null,
+			uts: ['']
 		}
 	},
-	props: ['id'],
+	components: {
+		Calendar
+	},
 	computed: {
 		...mapGetters('waybills', [
 			'waybills'
 		]),
+		totalFuel() {
+			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
+		},
 		isIntegerId() {
 			return this.id == 'main'
 		},
 		waybill() {
-			if (this.waybills) {
-				let waybill = this.waybills.filter(item => item.id == this.id) 
-				return waybill[0]
-			}
+			if (this.id) return this.waybills.filter(item => item.id == this.id)[0]
 			return null
 		},
 		dateStringOf() {
-			let date = new Date(this.waybill.of),
-					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
-					
-			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
+			if (this.waybill) {
+				let date = new Date(this.waybill.of),
+						day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
+						
+				return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
+			} else {
+				return null
+			}
 		},
 		dateTimeStringStart() {
-			let date = new Date(this.waybill.start),
+			let date = new Date(this.waybill.startFact),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate(),
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
@@ -175,7 +161,7 @@ export default {
 			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()},&nbsp;${hours}:${minutes}`
 		},
 		dateTimeStringFinish() {
-			let date = new Date(this.waybill.finish),
+			let date = new Date(this.waybill.finishFact),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate(),
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
@@ -188,6 +174,30 @@ export default {
 			'getWaybills',
 			'waybillsSort'
 		]),
+		closeWb() {
+			let formData = {}
+			formData.id = this.id
+			formData.of = this.waybill.of
+			formData.fuelVolume = this.waybill.fuelVolume
+			formData.mileageStart = this.waybill.mileageStart
+			formData.mileageFinish = this.milleageFinish
+			formData.mileageTotal = this.milleageFinish ? (this.milleageFinish - this.waybill.mileageStart > 0 ? (this.milleageFinish - this.waybill.mileageStart) : null ) : null
+			formData.fuelTotal = this.totalFuel
+			formData.status = "CLOSE"
+			formData.workText = this.uts
+
+			api.closeWaybill(formData)
+				.then(r => console.log(r))
+		},
+		addUts() {
+			this.uts.push('')
+		},
+		removeUts(key) {
+			this.uts.splice(key, 1)
+		},
+		// findWb() {
+		// 	this.waybill = this.waybills.filter(item => item.id === this.id) 
+		// },
 		changeWidth() {
 			if (this.milleageFinish) {
 				let width = this.milleageFinish.length * 12
@@ -196,9 +206,6 @@ export default {
 			} else {
 				document.querySelector('.finish').style.width = `0px`
 			}
-		},
-		to(id) {
-			this.$router.push(`/waybills/close/${id}`)
 		}
 	},
 	beforeMount() {
@@ -210,10 +217,6 @@ export default {
 					this.isLoading = false
 				})
 		}
-	},
-	mounted() {
-		let path = this.$router.history.current.path
-		if (!this.waybills && path !== '/waybills/close') this.to('')
 	}
 }
 </script>

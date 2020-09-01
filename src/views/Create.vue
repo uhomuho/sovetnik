@@ -9,7 +9,7 @@ div
 							|Новый
 							br
 							|путевой лист
-			
+
 				.level-right
 					.level-item
 						.level
@@ -119,7 +119,7 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='sendData.mileageStart'
+									v-model='waybill.mileageStart'
 									placeholder="Спидометр в начале смены")
 								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
@@ -131,7 +131,7 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='sendData.fuelStart'
+									v-model='waybill.fuelStart'
 									placeholder="Топливо в начале смены")
 								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
@@ -144,9 +144,9 @@ div
 				span.title Задание водителю:
 				input(
 					placeholder="Задание",
-					v-model='sendData.workText')
+					v-model='waybill.workText')
 
-			router-link.button.is-pulled-right(:to='`/waybills/preview/${waybill.id}`') Просмотр
+			.button.is-pulled-right(@click='openWb()') Просмотр
 
 			b-loading(
 				v-if="isLoading"
@@ -163,6 +163,7 @@ import monthName from '@/month'
 import Calendar from '@/components/calendar/_calendar'
 import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
 import api from '@/api/apiActions'
+import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
 export default {
 	name: 'CreateWaybill',
@@ -179,19 +180,8 @@ export default {
 			registrationPlate: null,
 			carSerial: null,
 			driver: null,
-			dreiverId: null,
-			lastWb: null,
-			sendData : {
-				id: this.ID,
-				of: null,
-				serial: null,
-				workText: null,
-				driverId: null,
-				startPlan: null,
-				finishPlan:	null,
-				mileageStart: this.fuelStart ? this.fuelStart : null,
-				fuelStart: this.mileageStart ? this.mileageStart : null
-			}
+			driverId: null,
+			lastWb: null
 		}
 	},
 	computed: {
@@ -202,9 +192,6 @@ export default {
 			listDrivers: 	'getNewListDrivers',
 			listCar: 			'getNewListCar'
 		}),
-		ID() {
-			return this.waybill.id
-		},
 		unixDateStart() {
 			return this.waybill.startPlan ? new Date(this.waybill.start).getTime() : null
 		},
@@ -241,12 +228,28 @@ export default {
 		}
 	},
 	methods: {
+		async openWb() {
+			if (!this.waybill.serial || !this.waybill.driverId || !this.waybill.startPlan || !this.waybill.finishPlan || !this.waybill.of || !this.waybill.serial) {
+				Snackbar.open('Заполните все поля!')
+				return false
+			}
+			this.waybill.status = "OPEN"
+			await api.createWaybill(JSON.stringify(this.waybill))
+				.then(r => {
+					console.log(r)
+					Snackbar.open('Путевой лист создан!')
+					this.isLoading = true
+					this.getNewWaybill()
+						.then(() => this.isLoading = false)
+				})
+		},
 		...mapActions('waybills', {
 			getNewWaybill: 'getNewWaybillData'
 		}),
 		...mapMutations('waybills', {
 			setListDrivers: 'setListDrivers',
-			setListCars: 'setListCars'
+			setListCars: 'setListCars',
+			setNewWaybill: 'setNewWaybill'
 		}),
 		async filterDriver() {
 			await api.getDrivers(this.driver)
@@ -264,15 +267,14 @@ export default {
 		},
 		selectStart(data) {
 			this.waybill.startPlan = data.date
-			this.sendData.startPlan = data.date.getTime()
+			this.waybill.startPlan = data.date.getTime()
 		},
 		selectFinish(data) {
 			this.waybill.finishPlan = data.date
-			this.sendData.finishPlan = data.date.getTime()
+			this.waybill.finishPlan = data.date.getTime()
 		},
 		selectOf(data) {
-			this.sendData.of = data.date.getTime()
-			this.waybill.of = data.date
+			this.waybill.of = data.date.getTime()
 		},
 		openOf() {
 			this.ofTime = !this.ofTime
@@ -313,12 +315,12 @@ export default {
 		},
 		setRegistrationPlate(obj) {
 			this.registrationPlate = obj.registrationPlate
-			this.sendData.serial = obj.serial
+			this.waybill.serial = obj.serial
 		},
 		setDriver(obj) {
 			this.driver = obj.name
 			this.driverId = obj.id
-			this.sendData.dreiverId = obj.id
+			this.waybill.driverId = obj.id
 		}
 	},
 	beforeMount() {

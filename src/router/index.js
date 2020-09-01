@@ -53,17 +53,7 @@ export default new Router({
 			menuName: 'Закрыть путевой лист',
 			component: Close,
 			hidden: false,
-			props: true,
-			children: [
-				{
-					path: ':id',
-					name: 'CloseWaybillById',
-					menuName: 'Закрыть путевой лист',
-					component: Close,
-					hidden: true,
-					props: true
-				}
-			]
+			props: true
 		},
 		{
 			path: '/waybills/:id',

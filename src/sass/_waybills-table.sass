@@ -30,8 +30,8 @@
 					width: 16%
 					min-width: 16%
 				.finish
-					width: 12%
-					min-width: 12%
+					width: 13%
+					min-width: 13%
 					border-right: 1px dashed $graphite1
 				.task
 					text-align: center
@@ -39,8 +39,8 @@
 					min-width: 23%
 					border-right: 1px dashed $graphite1
 				.driver
-					width: 19.5%
-					min-width: 19.5%
+					width: 15.5%
+					min-width: 15.5%
 					border-right: 1px dashed $graphite1
 
 				thead
@@ -75,12 +75,12 @@
 									.active
 										color: $orange4
 
-					th.start, th.finish
-						text-align: center
-						span
+						&.start, &.finish
+							text-align: center
 							font-size: .625rem
-							display: block
-							margin-top: -.3rem
+						
+						&.task
+							text-align: left
 
 				tbody
 					&>tr

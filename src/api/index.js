@@ -14,7 +14,7 @@ export default () => {
 				errorHandler = error => {
 					if (isHandlerEnabled(error.config)) {
 						Toast.open({
-							message: 'Ошибка!',
+							message: 'Ошибка при получении данных!',
 							type: 'is-danger',
 							position: 'is-bottom-right',
 							queue: false

@@ -24,9 +24,13 @@
 										@click='setCarFilter(value), waybillsSort()')
 											span {{ value }}
 							th.start 
-								|Выезд
+								|Время
+								br
+								|выезда
 							th.finish
-								|Возвращение
+								|Время
+								br
+								|возвращения
 							th.task Задание
 							th.driver Водитель
 							th.status Статус
@@ -44,12 +48,12 @@
 										td.is-lowercase {{ waybill.car.registrationPlate }}
 							td.start 
 								|{{ waybill.startFact ? dateTimeStamp(waybill.startFact) : null }}
-								span.icon(v-if='waybill.startPlan && waybill.startFact')
+								span.icon.is-small(v-if='waybill.startPlan && waybill.startFact')
 									i.far.fa-calendar-check(
 										:class='waybill.startPlan == waybill.startFact ? "is-success" : "is-danger"')
 							td.finish
 								|{{ waybill.finishPlan ? dateTimeStamp(waybill.finishPlan) : null }}
-								span.icon(v-if='waybill.finishPlan && waybill.finishFact')
+								span.icon.is-small(v-if='waybill.finishPlan && waybill.finishFact')
 									i.far.fa-calendar-check(
 										:class='waybill.finishPlan == waybill.finishFact ? "is-success" : "is-danger"')
 							td.task {{ waybill.workText.length <= 40 ? waybill.workText : `${waybill.workText.slice(0, -(waybill.workText.length - 40))}...` }}
@@ -127,7 +131,7 @@ export default {
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]}, ${hours}:${minutes}`
+			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${minutes}`
 		}
 	}
 }

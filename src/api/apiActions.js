@@ -15,5 +15,11 @@ export default {
 	},
 	getLastWb(params) {
 		return api().get(`waybill/last.json?serial=${params.serial}&status=CLOSE`)
+	},
+	createWaybill(params) {
+		return api().post('waybill/open', params)
+	},
+	closeWaybill(params) {
+		return api().post('waybill/close', params)
 	}
 }

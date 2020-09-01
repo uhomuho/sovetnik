@@ -162,8 +162,8 @@ export default {
 <style lang="sass" scoped>
 .section
 	padding-top: 0
-	padding-left: 7rem
-	padding-right: 8.5rem
+	padding-left: 6rem
+	padding-right: 6rem
 	
 	.container
 		&+.container

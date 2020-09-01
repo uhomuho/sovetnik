@@ -225,6 +225,8 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+	span
+		text-align: center
 	.calendar
 		border: 1px dashed $graphite1
 		width: 12rem
