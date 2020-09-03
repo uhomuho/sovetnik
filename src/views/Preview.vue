@@ -1,11 +1,9 @@
 <template lang="pug">
 	div
-		router-view
 </template>
 
 <script>
-
 export default {
-	name: 'Waybills'
+	name: 'WaybillPreview'	
 }
 </script>

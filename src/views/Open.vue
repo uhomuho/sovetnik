@@ -49,8 +49,9 @@ div
 									b-dropdown-item(
 										v-if='registrationPlate'
 										v-for='car in listCar'
+										:key='car.serial'
 										@click='setRegistrationPlate(car), getLastWb()'
-										:class='car.registrationPlate == registrationPlate') {{ car.registrationPlate }}
+										:class='car.registrationPlate == registrationPlate ? "is-active" : null') {{ car.registrationPlate }}
 
 					.level
 						.level-left
@@ -72,6 +73,7 @@ div
 									b-dropdown-item(
 										v-if='driver'
 										v-for='driver in listDrivers'
+										:key='driverId'
 										@click='setDriver(driver)'
 										:class='driver.id == driver ? "is-active" : null') {{ driver.name }}
 					.level
@@ -176,11 +178,9 @@ export default {
 			finishTime: false,
 			ofTime: false,
 			isLoading: false,
-			driverLoad: false,
 			registrationPlate: null,
 			carSerial: null,
 			driver: null,
-			driverId: null,
 			lastWb: null
 		}
 	},
@@ -225,6 +225,20 @@ export default {
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
 			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()},&nbsp;${hours}:${minutes}`
+		},
+		formData() {
+			return {
+				id: this.waybill.id ? this.waybill.id : null,
+				of: this.waybill.of ? this.waybill.of : null,
+				car: this.waybill.car ? this.waybill.car : null,
+				serial: this.waybill.serial ? this.waybill.serial : null,
+				workText: this.waybill.workText ? this.waybill.workText : null,
+				driverId: this.waybill.driverId ? this.waybill.driverId : null,
+				startPlan: this.waybill.startPlan ? this.waybill.startPlan : null,
+				finishPlan: this.waybill.finishPlan ? this.waybill.finishPlan : null,
+				mileageStart: this.waybill.mileageStart ? this.waybill.mileageStart : null,
+				fuelStart: this.waybill.fuelStart ? this.waybill.fuelStart : null
+			}
 		}
 	},
 	methods: {
@@ -234,7 +248,7 @@ export default {
 				return false
 			}
 			this.waybill.status = "OPEN"
-			await api.createWaybill(JSON.stringify(this.waybill))
+			await api.createWaybill(this.formData)
 				.then(r => {
 					console.log(r)
 					Snackbar.open('Путевой лист создан!')
@@ -266,11 +280,9 @@ export default {
 				.then(r => this.lastWb = r.data)
 		},
 		selectStart(data) {
-			this.waybill.startPlan = data.date
 			this.waybill.startPlan = data.date.getTime()
 		},
 		selectFinish(data) {
-			this.waybill.finishPlan = data.date
 			this.waybill.finishPlan = data.date.getTime()
 		},
 		selectOf(data) {
@@ -316,10 +328,10 @@ export default {
 		setRegistrationPlate(obj) {
 			this.registrationPlate = obj.registrationPlate
 			this.waybill.serial = obj.serial
+			this.waybill.car = obj
 		},
 		setDriver(obj) {
 			this.driver = obj.name
-			this.driverId = obj.id
 			this.waybill.driverId = obj.id
 		}
 	},

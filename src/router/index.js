@@ -4,12 +4,21 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 // Components
+// -> Login/Register
 import Login from '@/views/Login'
-import Reports from '@/views/Reports'
-import Waybill from '@/views/Waybill'
+
+// -> Waybills
 import Waybills from '@/views/Waybills'
-import Create from '@/views/Create'
+import WaybillsList from '@/views/WaybillsList'
+import Open from '@/views/Open'
 import Close from '@/views/Close'
+import Preview from '@/views/Preview'
+
+// -> Reports 
+import Reports from '@/views/Reports'
+import WaybillsReports from '@/views/WaybillsReports'
+import WaybillReport from '@/views/WaybillReport'
+import Autograph from '@/views/Autograph'
 
 // Router
 export default new Router({
@@ -20,7 +29,6 @@ export default new Router({
 			path: '/',
 			name: 'Главная',
 			component: Login,
-			// image: 'svg',
 			hidden: true,
 			meta: {
 				
@@ -30,49 +38,72 @@ export default new Router({
 		{
 			path: '/waybills',
 			name: 'Waybills',
-			menuName: 'Путевые листы',
 			component: Waybills,
 			hidden: false,
-			meta: {
-				
-			}
+			children: [
+				{
+					path: '',
+					name: 'WaybillsList',
+					menuName: 'Путевые листы',
+					menuIcon: 'waybills',
+					component: WaybillsList,
+					hidden: false
+				},
+				{
+					path: 'open',
+					name: 'OpenWaybill',
+					menuName: 'Открыть путевой лист',
+					menuIcon: 'addWaybill',
+					component: Open,
+					hidden: false
+				},
+				{
+					path: 'close',
+					name: 'CloseWaybill',
+					menuName: 'Закрыть путевой лист',
+					menuIcon: 'closeWaybill',
+					component: Close,
+					hidden: false
+				},
+				{
+					path: 'preview/:id',
+					nae: 'PreviewWaybill',
+					component: Preview,
+					hidden: true
+				}
+			]
 		},
 		{
-			path: '/waybills/open',
-			name: 'OpenWaybill',
-			menuName: 'Открыть путевой лист',
-			component: Create,
-			hidden: false,
-			meta: {
-			
-			}
-		},
-		{
-			path: '/waybills/close',
-			name: 'CloseWaybill',
-			menuName: 'Закрыть путевой лист',
-			component: Close,
-			hidden: false,
-			props: true
-		},
-		{
-			path: '/waybills/:id',
-			name: 'Аналитика по смене',
-			component: Waybill,
-			hidden: true,
-			props: true,
-			meta: {
-				
-			}
-		},
-		{
-			path: '/analitycs',
-			name: 'Отчёт по сменам',
+			path: '/reports',
+			name: 'Reports',
+			menuName: 'Отчеты',
 			component: Reports,
-			hidden: true,
-			meta: {
-				
-			}
+			hidden: false,
+			children: [
+				{
+					path: 'waybills',
+					name: 'WaybillsReport',
+					menuName: 'По путевым листам',
+					menuIcon: 'report_menu-item',
+					component: WaybillsReports,
+					hidden: false
+				},
+				{
+					path: 'waybills/:id',
+					name: 'WaybillReport',
+					component: WaybillReport,
+					hidden: true,
+					props: true
+				},
+				{
+					path: 'autograph',
+					name: 'Autopraph',
+					menuName: 'По автографу',
+					menuIcon: 'report_menu-item',
+					component: Autograph,
+					hidden: false
+				}
+			]
 		},
 		{
 			path: '*',

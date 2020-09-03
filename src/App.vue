@@ -2,7 +2,7 @@
 	#app
 		//- Header(:breadcrumbs='breadcrumbs')
 		.hero
-			Sidebar(:routes='routes', :router='router')
+			Sidebar(:routes='routes')
 			router-view#main
 </template>
 
@@ -18,8 +18,7 @@ export default {
 	data() {
 		return {
 			breadcrumbs: this.$router.currentRoute.meta.breadcrumbs,
-			routes: this.$router.options.routes,
-			router: this.$router.history.current.path
+			routes: this.$router.options.routes
 		}
 	},
 	methods: {
@@ -29,6 +28,7 @@ export default {
 		])
 	},
 	beforeMount() {
+		console.log(this.routes)
 		this.getWaybills()
 			.then(() => {
 				this.waybillsSort()

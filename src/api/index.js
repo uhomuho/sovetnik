@@ -2,7 +2,7 @@ import axios from 'axios'
 import config from '../../public/config.json'
 import { ToastProgrammatic as Toast } from 'buefy'
 
-axios.defaults.headers.common['Content-Type'] = 'multipart/form-data'
+axios.defaults.headers.common['Content-Type'] = 'application/json'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
 
 export default () => {

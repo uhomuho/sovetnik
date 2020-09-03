@@ -17,7 +17,7 @@ export default {
 		return api().get(`waybill/last.json?serial=${params.serial}&status=CLOSE`)
 	},
 	createWaybill(params) {
-		return api().post('waybill/open', params)
+		return api().post('waybill/openJson', params)
 	},
 	closeWaybill(params) {
 		return api().post('waybill/close', params)
