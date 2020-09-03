@@ -2,23 +2,6 @@
 	div
 		.section
 			.container
-				//- .columns.is-flex.is-mobile.is-paddingless.is-marginless
-				//- 	.column.is-4.happens
-				//- 		.column-container
-				//- 			span.title {{ happens }}
-				//- 			span.subtitle Происшествий
-
-				//- 	.column.is-4.expired
-				//- 		.column-container
-				//- 			span.title {{ expired }}
-				//- 			span.subtitle Просрочено
-
-				//- 	.column.is-4.fixed
-				//- 		.column-container
-				//- 			span.title {{ fixed }}
-				//- 			span.subtitle Исправлено
-
-			.container
 				.level
 					.level-left
 						.level-item
@@ -161,9 +144,7 @@ export default {
 
 <style lang="sass" scoped>
 .section
-	padding-top: 0
-	padding-left: 6rem
-	padding-right: 6rem
+	padding: $section_padding
 	
 	.container
 		&+.container
