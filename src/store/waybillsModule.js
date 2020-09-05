@@ -54,13 +54,20 @@ export default {
 		},
 		setCarFilter: (state, payload) => state.carFilter = payload,
 		setAllNewWaybillData (state, payload) {
-			state.newWaybill = payload.waybill
-			state.newListDrivers = payload.listDrivers
-			state.newListCar = payload.listCar
+			if (payload.waybill) {
+				state.newWaybill = payload.waybill
+				localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+			}
 
-			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
-			localStorage.setItem('newListDrivers', JSON.stringify(state.newListDrivers))
-			localStorage.setItem('newListCar', JSON.stringify(state.newListCar))
+			if (payload.newListDrivers) {
+				state.newListDrivers = payload.listDrivers
+				localStorage.setItem('newListDrivers', JSON.stringify(state.newListDrivers))
+			}
+
+			if (payload.newListCar) {
+				state.newListCar = payload.listCar
+				localStorage.setItem('newListCar', JSON.stringify(state.newListCar))
+			}
 		},
 		setListDrivers(state, payload) {
 			state.newListDrivers = payload

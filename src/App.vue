@@ -28,7 +28,6 @@ export default {
 		])
 	},
 	beforeMount() {
-		console.log(this.routes)
 		this.getWaybills()
 			.then(() => {
 				this.waybillsSort()

@@ -23,6 +23,8 @@ html
 	body
 		font-family: 'Montserrat', sans-serif
 
+	#app
+
 		h1
 			font-size: 3rem
 			font-weight: bold
@@ -32,20 +34,21 @@ html
 			user-select: none
 			color: $graphite6
 
-	.button 
-		color: $grey2
-		font-size: 1.125rem
-		font-weight: bold
-		padding: .8rem 3rem
-		background-color: $blue4
-		border-radius: 5px
-		box-shadow: 0px 4px 20px rgba(45, 156, 219, 0.4)
-		&:hover
+		.button
 			color: $grey2
+			font-size: 1.125rem
+			font-weight: bold
+			padding: .8rem 3rem
+			background-color: $blue4
+			border-radius: 5px
+			box-shadow: 0px 4px 20px rgba(45, 156, 219, 0.4)
+			&:hover
+				color: $grey2
 
 // Components styles
 @import '_header.sass'
 @import '_sidebar.sass'
 @import '_waybills-table.sass'
-@import '_create.sass'
+@import '_open.sass'
 @import '_close.sass'
+@import '_waybills_reports-table.sass'

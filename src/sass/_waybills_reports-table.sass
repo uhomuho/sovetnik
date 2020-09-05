@@ -1,0 +1,108 @@
+#reports_table
+	table
+		width: 100%
+		*
+			font-family: 'Montserrat'
+			font-weight: normal
+			color: $graphite4
+		.id
+			text-align: center
+			width: 7%
+			border-right: 1px dashed $graphite1
+		.car
+			width: 29%
+			border-right: 1px dashed $graphite1
+			.wrapper
+				@include flex(flex-start, center)
+				.icon
+					height: .5rem
+					transition: all .3s ease-in-out
+			.dropdown.is-active
+				.icon
+					transform: rotate(180deg)
+			.dropdown-item
+				&.is-active
+					color: #fff
+		.fuel
+			text-align: center
+			width: 27%
+			padding-right: 0
+			padding-left: 0 
+			border-right: 1px dashed $graphite1
+			table
+				width: 100%
+		.mileage
+			text-align: center
+			width: 27%
+			padding-right: 0
+			padding-left: 0
+			border-right: 1px dashed $graphite1
+			table
+				width: 100%
+		.status
+			width: 11%
+			.wrapper
+				@include flex(flex-start, center)
+				.icon
+					height: .5rem
+					transition: all .3s ease-in-out
+			.dropdown.is-active
+				.icon
+					transform: rotate(180deg)
+				.dropdown-item
+					&.is-active
+						color: #fff
+		thead
+			background: $grey2
+			box-shadow: 0 1px 0 $grey2
+			th
+				font-size: .875rem
+				vertical-align: middle
+				table
+					width: 100%
+					td
+						font-size: .625rem
+						border: none
+		tbody 
+			tr
+				td
+					vertical-align: middle
+					&.id
+						position: relative
+						&::before
+							display: none
+							content: ""
+							height: 96%
+							width: .5rem
+							position: absolute
+							left: 0
+							top: 0
+							bottom: 0
+							margin: auto 0
+						&.closed::before
+							display: block
+							background-color: $red2
+						&.opened::before
+							display: block
+							background-color: $teal2
+						&.check::before
+							display: block
+							background-color: $orange2
+					&.car
+						padding: 0
+						table
+							width: 100%
+							td
+								font-size: .8rem
+								&:first-of-type
+									width: 50%
+								&:last-of-type
+									text-align: right
+									width: 50%
+					&.status
+						&.opened
+							color: $teal4
+						&.closed
+							color: $red4
+						&.check
+							color: $orange4

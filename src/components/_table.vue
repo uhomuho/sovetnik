@@ -1,5 +1,5 @@
 <template lang="pug">
-	.wrapper#reports_table
+	.wrapper#waybills_table
 		.container(v-if='waybills[0]')
 			.table-container
 				table.table.is-fullwidth

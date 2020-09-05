@@ -1,4 +1,4 @@
-#reports_table
+#waybills_table
 	.container
 		span.subtitle
 			margin-bottom: 2rem
@@ -27,16 +27,16 @@
 					min-width: 24.3%
 					border-right: 1px dashed $graphite1
 				.start
-					width: 16%
-					min-width: 16%
+					width: 15%
+					min-width: 15%
 				.finish
-					width: 13%
-					min-width: 13%
+					width: 14%
+					min-width: 14%
 					border-right: 1px dashed $graphite1
 				.task
 					text-align: center
-					width: 23%
-					min-width: 23%
+					width: 19%
+					min-width: 19%
 					border-right: 1px dashed $graphite1
 				.driver
 					width: 15.5%
@@ -155,9 +155,7 @@
 							&.status
 								font-size: .625rem
 								text-align: left
-								display: flex
-								align-items: center
-								justify-content: flex-start
+								position: relative
 								&.closed
 									color: $red4
 								&.check
@@ -165,9 +163,16 @@
 								&.opened
 									color: $teal4
 
-								.icon
-									width: .6rem
-									margin-left: .5rem
+								a
+									position: absolute
+									top: 0
+									bottom: 0
+									right: .5rem
+									margin: auto 0
+									height: 1.6rem
+									.icon
+										width: .6rem
+										margin-left: .5rem
 
 						td.start, td.finish
 							font-size: .75rem

@@ -143,9 +143,7 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.section
-	padding: $section_padding
-	
+.section	
 	.container
 		&+.container
 			margin-top: 4.5rem

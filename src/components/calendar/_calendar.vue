@@ -23,7 +23,7 @@
 							@click='setDay(day.num)'
 							:class='compDay == day.unix ? "active" : null')
 							| {{day.num}}
-		.footer
+		.footer(v-if='time')
 			.timepicker
 				.hours
 					.trigger.incrase(@click='incraseHours()')
@@ -68,7 +68,7 @@ export default {
 			weeks: []
 		}
 	},
-	props: ['dateStart', 'dateFinish'],
+	props: ['dateStart', 'dateFinish', 'time'],
 	computed: {
 		daysCount() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear,

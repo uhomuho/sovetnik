@@ -73,7 +73,7 @@ div
 									b-dropdown-item(
 										v-if='driver'
 										v-for='driver in listDrivers'
-										:key='driverId'
+										:key='driver.driverId'
 										@click='setDriver(driver)'
 										:class='driver.id == driver ? "is-active" : null') {{ driver.name }}
 					.level
@@ -243,19 +243,21 @@ export default {
 	},
 	methods: {
 		async openWb() {
-			if (!this.waybill.serial || !this.waybill.driverId || !this.waybill.startPlan || !this.waybill.finishPlan || !this.waybill.of || !this.waybill.serial) {
-				Snackbar.open('Заполните все поля!')
-				return false
+			for (var data in this.formData) {
+				if (!this.formData[data]) {
+					Snackbar.open({
+						message: 'Заполните все поля!',
+						type: 'is-danger'
+					})
+					return false
+				}
 			}
-			this.waybill.status = "OPEN"
-			await api.createWaybill(this.formData)
-				.then(r => {
-					console.log(r)
-					Snackbar.open('Путевой лист создан!')
-					this.isLoading = true
-					this.getNewWaybill()
-						.then(() => this.isLoading = false)
-				})
+			let newWaybill = {
+				waybill: this.formData
+			}
+			console.log(this.formData)
+			this.setNewWaybill(newWaybill)
+			
 		},
 		...mapActions('waybills', {
 			getNewWaybill: 'getNewWaybillData'
@@ -263,7 +265,7 @@ export default {
 		...mapMutations('waybills', {
 			setListDrivers: 'setListDrivers',
 			setListCars: 'setListCars',
-			setNewWaybill: 'setNewWaybill'
+			setNewWaybill: 'setAllNewWaybillData'
 		}),
 		async filterDriver() {
 			await api.getDrivers(this.driver)
