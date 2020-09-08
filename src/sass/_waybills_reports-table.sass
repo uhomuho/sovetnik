@@ -26,32 +26,63 @@
 		.fuel
 			text-align: center
 			width: 27%
-			padding-right: 0
-			padding-left: 0 
 			border-right: 1px dashed $graphite1
 			table
 				width: 100%
 		.mileage
 			text-align: center
 			width: 27%
-			padding-right: 0
-			padding-left: 0
 			border-right: 1px dashed $graphite1
 			table
 				width: 100%
 		.status
 			width: 11%
-			.wrapper
+			.dropdown
 				@include flex(flex-start, center)
+				position: relative
+				&.is-active
+					.icon
+						transform: rotate(180deg)
 				.icon
 					height: .5rem
-					transition: all .3s ease-in-out
-			.dropdown.is-active
-				.icon
-					transform: rotate(180deg)
-				.dropdown-item
-					&.is-active
-						color: #fff
+					margin-left: .2rem
+					transition: all .1s ease-in-out
+				.menu
+					background-color: #fff
+					border: 1px dashed $graphite1
+					box-shadow: 0px 8px 32px rgba(176, 191, 198, 0.5)
+					padding: 2rem 1.25rem
+					position: absolute
+					top: 115%
+					left: 0
+					z-index: 99
+					label
+						font-size: .625rem
+						display: flex
+						justify-content: space-between
+						position: relative
+						&::after
+							display: block
+							content: ""
+							width: .75rem
+							height: .75rem
+							margin-left: 1rem
+							border: 2px solid $graphite2
+					input
+						visibility: hidden
+						position: absolute
+						&#close
+							&+label
+								color: $red4
+						&#check
+							&+label
+								color: $orange4
+						&#open
+							&+label
+								color: $teal4
+						&:checked
+							&+label::after
+								background: center / contain no-repeat url('/icons/check.svg')
 		thead
 			background: $grey2
 			box-shadow: 0 1px 0 $grey2
@@ -89,7 +120,6 @@
 							display: block
 							background-color: $orange2
 					&.car
-						padding: 0
 						table
 							width: 100%
 							td

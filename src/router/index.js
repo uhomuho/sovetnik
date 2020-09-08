@@ -105,10 +105,10 @@ export default new Router({
 				}
 			]
 		},
-		{
-			path: '*',
-			redirect: '/waybills',
-			hidden: true
-		},
+		// {
+		// 	path: '*',
+		// 	redirect: '/waybills',
+		// 	hidden: true
+		// },
 	]
 })

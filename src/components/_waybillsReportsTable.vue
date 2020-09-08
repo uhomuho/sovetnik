@@ -1,5 +1,5 @@
 <template lang="pug">
-	div#reports_table
+	div#reports_table(@click='close')
 			table.table
 				thead
 					tr
@@ -23,53 +23,72 @@
 									@click='setCar(car)'
 									:class='car == filter.car ? "is-active" : null')
 									|{{ car }}
-						th.fuel Расход ГСМ, л
+						th.fuel.is-paddingless Расход ГСМ, л
 							table
 								tr
 									td по путевому листу
 									td по автографу
-						th.mileage Пройдено, км
+						th.mileage.is-paddingless Пройдено, км
 							table
 								tr
 									td по путевому листу
 									td по автографу
 						th.status 
-							b-dropdown
-								.wrapper(
-									slot="trigger"
-									role="button")
-									p Статус
-									img.icon( src="@/assets/icons/angle.svg" )
-								
-								b-dropdown-item(
-									aria-role="list-item"
-									v-for="status in statusList"
-									@click='setStatus(status.name)'
-									:class='status.name == filter.status ? "is-active" : null')
-									|{{ status.text }}
-				tbody
+							.dropdown(
+								@click='openDropdown'
+								:class='openedDropdown ? "is-active" : null')
+								p Статус
+								img.icon( src="@/assets/icons/angle.svg" )
+
+								.menu(v-if='openedDropdown')
+									.field(v-for='status in statusList')
+										.control
+											input(
+												type="checkbox"
+												:id='status.id'
+												:value='status.name'
+												v-model='filter.status',
+												@input='choose')
+											label.checkbox(:for='status.id')
+												|{{ status.text }}
+				tbody(v-if='waybills.length !== 0')
 					tr(
 						v-for='waybill in waybills'
 						:class='waybill.status.class')
 						td.id(
 							:class="waybill.status.class") {{ waybill.id }}
-						td.car
+						td.car.is-paddingless
 							table
 								tr
 									td {{ waybill.car.name }}
 									td {{ waybill.car.registrationPlate }}
-						td.fuel
+						td.fuel.is-paddingless
 							table
 								tr
 									td {{ waybill.fuelWaybill }}
 									td {{ waybill.fuelAutograph }}
-						td.mileage
+						td.mileage.is-paddingless
 							table
 								tr
 									td {{ waybill.mileageWaybill }}
 									td {{ waybill.mileageAutograph }}
 						td.status(
 							:class="waybill.status.class") {{ waybill.status.text }}
+
+				tbody.no-data(v-else)
+					tr
+						td.id 
+							b-skeleton(:animated='false')
+						td.car
+							b-skeleton(:animated='false')
+						td.fuel
+							b-skeleton(:animated='false')
+						td.mileage
+							b-skeleton(:animated='false')
+						td.status
+							b-skeleton(:animated='false')
+			.content(v-if='waybills.length == 0')
+				h4.has-text-centered Нет подходящих данных
 </template>
 
 <script>
@@ -79,28 +98,28 @@ export default {
 	name: 'waybillsReportsTable',
 	data() {
 		return {
+			openedDropdown: false,
 			filter: {
-				status: "CLOSE",
+				status: ["CLOSE"],
 				car: "ALL"
 			},
 			statusFilter: "CLOSE",
 			carFilter: "ALL",
 			statusList: [
 				{
-					name: "ALL",
-					text: "Все"
-				},
-				{
 					name: "CLOSE",
-					text: "Закрыт"
+					text: "Закрыт",
+					id: 	"close"
 				},
 				{
 					name: "OPEN",
-					text: "Открыт"
+					text: "Открыт",
+					id: 	"open"
 				},
 				{
 					name: "CHECK",
-					text: "Проверка"
+					text: "Проверка",
+					id: 	"check"
 				}
 			]
 		}
@@ -110,20 +129,32 @@ export default {
 	},
 	methods: {
 		...mapActions('reports', {
-			filterByStatus: 'filterByStatus',
+			filterReports: 'filterReports',
 			filterByCar: 'filterByCar'
 		}),
-		setStatus(val) {
-			this.filter.status = val
-			this.filterByStatus(this.filter)
+		choose() {
+			setTimeout(()=>{
+				this.filterReports(this.filter)
+			}, 50)
 		},
 		setCar(val) {
 			this.filter.car = val
-			this.filterByCar(this.filter)
-		}
+			// this.filter.status = ["CLOSE", "CHECK", "OPEN"]
+			this.filterReports(this.filter)
+		},
+		openDropdown(e) {
+			if (!e.target.matches('.menu *')) {
+				this.openedDropdown = !this.openedDropdown
+			}
+		},
+		close(e) {
+			if(!e.target.matches('.dropdown *')) {
+				this.openedDropdown = false
+			}
+		},
 	},
 	beforeMount() {
-		this.filterByStatus(this.filter)
+		this.filterReports(this.filter)
 	}
 }
 </script>

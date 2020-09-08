@@ -1,5 +1,5 @@
 <template lang="pug">
-	div.calendar
+	div.calendar(v-if='!range')
 		.header
 			.trigger(@click='decraseYear()')
 				img(src="@/assets/icons/decrase.svg")
@@ -16,6 +16,15 @@
 
 		.body
 			table
+				thead
+					tr
+						th пн
+						th вт
+						th ср
+						th чт
+						th пт
+						th сб
+						th вс
 				tbody
 					tr(v-for='week in weeks')
 						td(
@@ -38,11 +47,73 @@
 					|{{ minutes }}
 					.trigger.decrase(@click='decraseMinutes()')
 						img.incrase(src="@/assets/icons/decrase.svg")
+	div.calendar.range(v-else)
+		.header
+			.trigger(@click='decraseYear()')
+				img(src="@/assets/icons/decrase.svg")
+			span {{ year }}
+			.trigger(@click='incraseYear()')
+				img(src="@/assets/icons/incrase.svg")
+
+		.wrapper.body
+			.month-container
+				.month-selector
+					.trigger(@click='decraseMonth()')
+						img(src="@/assets/icons/decrase.svg")
+					span {{ selectedMonthName }}
+					.trigger(@click='incraseMonth()')
+						img(src="@/assets/icons/incrase.svg")
+
+				.body
+					table
+						thead
+							tr
+								th пн
+								th вт
+								th ср
+								th чт
+								th пт
+								th сб
+								th вс
+						tbody
+							tr(v-for='week in weeks')
+								td(
+									v-for='day in week'
+									@click='setDay(day.num)'
+									:class='compDay == day.unix ? "active" : null')
+									| {{day.num}}
+
+			.month-container
+				.month-selector
+					.trigger(@click='decraseMonth()')
+						img(src="@/assets/icons/decrase.svg")
+					span {{ selectedMonthName }}
+					.trigger(@click='incraseMonth()')
+						img(src="@/assets/icons/incrase.svg")
+
+				.body
+					table
+						thead
+							tr
+								th пн
+								th вт
+								th ср
+								th чт
+								th пт
+								th сб
+								th вс
+						tbody
+							tr(v-for='week in weeks')
+								td(
+									v-for='day in week'
+									@click='setDay(day.num)'
+									:class='compDay == day.unix ? "active" : null')
+									| {{day.num}}
 </template>
 
 <script>
 import monthName from '@/month'
-// import calendarData from '/calendarData'
+import { mapActions } from 'vuex'
 
 export default {
 	name: 'Calendar',
@@ -68,7 +139,7 @@ export default {
 			weeks: []
 		}
 	},
-	props: ['dateStart', 'dateFinish', 'time'],
+	props: ['dateStart', 'dateFinish', 'time', 'autograph', 'range'],
 	computed: {
 		daysCount() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear,
@@ -107,6 +178,9 @@ export default {
 		}
 	},
 	methods: {
+		...mapActions('reports', {
+			getAutographReport: 'apiAutographReport'
+		}),
 		setDay(day) {
 			let year 		= this.selectedYear ? this.selectedYear : this.currentYear,
 					month 	= this.selectedMonth ? this.selectedMonth : this.currentMonth
@@ -116,6 +190,8 @@ export default {
 			this.$emit('select', {
 				date: this.selectedDate
 			})
+			
+			if (this.autograph) this.getAutographReport()
 		},
 		decraseYear() {
 			let year = this.selectedYear ? this.selectedYear - 1 : this.currentYear - 1,
@@ -199,19 +275,32 @@ export default {
 			let sortDays 		= {},
 					weeksCount 	= Math.ceil(this.daysCount/7),
 					year 				= this.selectedYear ? this.selectedYear : this.currentYear,
-					month 			= this.selectedMonth ? this.selectedMonth : this.currentMonth
+					month 			= this.selectedMonth ? this.selectedMonth : this.currentMonth,
+					diff 				= 0
 
 			for (var i = 1; i <= weeksCount; i++) {
 				let daysCount 	= i * 7,
 						y 					= 7 * (i - 1)
 
 				sortDays[i] = []
+				if (i == 1 && new Date(`${year}-${month}-${y+1}`).getDay() !== 1 && this.range) {
+					let emptyDays = new Date(`${year}-${month}-${y+1}`).getDay() - 1
+					for (var z = 1; z <= emptyDays; z++) {
+						sortDays[i].unshift({unix: null, num: null})
+						y++
+						diff++
+					}
+					// console.log(new Date(`${year}-${month}-${y+1}`).getDay())
+				} else {
+					// diff = 0
+				}
+
 				for (y; y < daysCount; y++) {
 					let data = {
-						unix: new Date(`${year}-${month}-${y+1}`).getTime(),
-						num: y+1
+						unix: new Date(`${year}-${month}-${y-diff+1}`).getTime(),
+						num: y-diff+1
 					}
-					if (y+1 <= this.daysCount) sortDays[i].push(data)
+					if (y+1 <= this.daysCount + diff) sortDays[i].push(data)
 				}
 			}
 			this.weeks = sortDays
@@ -231,6 +320,26 @@ export default {
 		border: 1px dashed $graphite1
 		width: 12rem
 		background-color: #fff
+		&.range
+			width: fit-content
+			background-color: transparent
+			border: none
+
+			.header
+				width: 50%
+				background-color: #fff
+				border: 1px dashed $graphite1
+				border-bottom: none
+
+			.wrapper
+				width: fit-content
+				background-color: #fff
+				border: 1px dashed $graphite1
+				display: flex
+				align-items: flex-start
+				justify-content: flex-start
+				.month-container
+					padding: 0 .2rem
 		*
 			user-select: none
 
@@ -246,7 +355,7 @@ export default {
 				color: $graphite4!important
 
 			.trigger
-				height: 3rem
+				height: 2.9rem
 				padding: 0 1rem
 				display: flex
 				align-items: center
@@ -257,10 +366,17 @@ export default {
 		
 		.body
 			padding: .5rem 1rem 1rem
+			&.wrapper
+				padding: 0
 			table
 				text-align: center
 				color: $graphite4
 				width: 100%
+				thead
+					th
+						font-size: .625rem
+						font-weight: normal
+						color: $graphite1
 				td
 					padding: .2rem .1rem
 					border-radius: 4px

@@ -1,14 +1,14 @@
 <template lang="pug">
-	div
+	div(@click='close')
 		.section
 			.container
 				.level
 					.level-left
 						.level-item
 							h1 
-								|Путевые листы
+								|Отчет по
 								br
-								|за период:
+								|путевым листам
 					.level-right
 						.level-item
 							//- table
@@ -101,12 +101,26 @@ export default {
 			setDateTo: 'setDateTo',
 			setDateFrom: 'setDateFrom'
 		}),
-		openTo() {
-			this.showTo = !this.showTo
+		openTo(e) {
+			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
+				this.showTo = !this.showTo
+			}
 		},
-		openFrom() {
-			this.showFrom = !this.showFrom
-		}
+		openFrom(e) {
+			if(e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+				this.showFrom = !this.showFrom
+			}
+		},
+		close(e) {
+			if(!e.target.matches('.calendar *, .wrapper.to *, .wrapper.from *')) {
+				if (this.showTo) {
+					this.showTo = false
+				}
+				if (this.showFrom) {
+					this.showFrom = false
+				}
+			}
+		},
 	},
 	beforeMount() {
 		this.getWaybillsReports()

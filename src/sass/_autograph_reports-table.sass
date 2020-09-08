@@ -1,0 +1,88 @@
+#autograph_table
+	table.top
+		width: 100%
+		margin-bottom: 0rem
+		*
+			font-family: 'Montserrat'
+			font-weight: normal
+			font-size: .875rem
+			color: $graphite4
+		
+		.car 
+			border-right: 1px dashed $graphite1
+			width: 32.8%
+		.fuel
+			border-right: 1px dashed $graphite1
+			width: 44.3%
+			td
+				width: 25%
+				min-width: 25%
+		.distance
+			width: 20.5%
+			td
+				width: 33.3333333%
+				min-width: 33.3333333%
+				&:first-of-type
+					text-align: left
+				&:nth-of-type(2)
+					text-align: center
+				&:last-of-type
+					text-align: right
+
+		thead
+			th
+				font-size: .875rem
+				vertical-align: middle
+				text-align: center
+				&.car
+					text-align: left
+				table
+					width: 100%
+					td
+						font-size: .625rem
+						padding: 0
+						border: none
+		tbody
+			&>tr
+				border-bottom: 1px solid $graphite1
+				box-shadow: 0 1px 0 $grey2
+				&:nth-child(even)
+					background-color: $grey2
+				&:hover
+					background-color: $lineHover
+				&>td
+					&.car
+						td:first-of-type
+							text-align: left
+						td:last-of-type
+							font-family: 'Cabin', sans-serif
+							font-size: 1rem
+							text-align: right
+					table
+						width: 100%
+						vertical-align: middle
+						td
+							text-align: center
+				&:last-of-type
+					.fuel
+						border-bottom: 1px solid $graphite4
+						
+	table.bottom
+		width: 100%
+		*
+			font-size: .875rem
+			color: $graphite4
+			border: none
+		.car
+			width: 30.8%
+			padding: 0
+			td
+				text-align: right
+		.fuel
+			width: 44.3%
+			padding: 0
+		.distance
+			width: 23.5%
+		table
+			text-align: center
+			width: 100%

@@ -21,5 +21,8 @@ export default {
 	},
 	closeWaybill(params) {
 		return api().post('waybill/close', params)
+	},
+	getAutographReport(params) {
+		return api().get(`report/track.json?start=${params.from.year}-${params.from.month}-${params.from.day}T07:00&end=${params.to.year}-${params.to.month}-${params.to.day}T19:00`)
 	}
 }
