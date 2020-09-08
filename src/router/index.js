@@ -63,7 +63,15 @@ export default new Router({
 					menuName: 'Закрыть путевой лист',
 					menuIcon: 'closeWaybill',
 					component: Close,
-					hidden: false
+					hidden: false,
+					props: true,
+					children: [
+						{
+							path: ':id',
+							component: Close,
+							hidden: true
+						}
+					]
 				},
 				{
 					path: 'preview/:id',
@@ -105,10 +113,10 @@ export default new Router({
 				}
 			]
 		},
-		// {
-		// 	path: '*',
-		// 	redirect: '/waybills',
-		// 	hidden: true
-		// },
+		{
+			path: '*',
+			redirect: '/waybills',
+			hidden: true
+		},
 	]
 })

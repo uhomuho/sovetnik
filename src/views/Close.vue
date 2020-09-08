@@ -1,5 +1,4 @@
 <template lang="pug">
-//- blur
 div#main
 	.container#close
 		.section
@@ -18,7 +17,7 @@ div#main
 								.level-item
 									|№
 									input(
-										v-model="id"
+										v-model="wbId"
 										placeholder="ID"
 										type="number")
 							.level-right
@@ -120,13 +119,18 @@ export default {
 			startTime: false,
 			finishTime: false,
 			isLoading: false,
-			id: null,
+			wbId: this.id,
 			milleageFinish: null,
 			uts: ['']
 		}
 	},
 	components: {
 		Calendar
+	},
+	props: {
+		id: {
+			default: null
+		}
 	},
 	computed: {
 		...mapGetters('waybills', [
@@ -136,10 +140,10 @@ export default {
 			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
 		},
 		isIntegerId() {
-			return this.id == 'main'
+			return this.wbId == 'main'
 		},
 		waybill() {
-			if (this.id) return this.waybills.filter(item => item.id == this.id)[0]
+			if (this.wbId) return this.waybills.filter(item => item.id == this.wbId)[0]
 			return null
 		},
 		dateStringOf() {
@@ -176,7 +180,7 @@ export default {
 		]),
 		closeWb() {
 			let formData = {}
-			formData.id = this.id
+			formData.id = this.wbId
 			formData.of = this.waybill.of
 			formData.fuelVolume = this.waybill.fuelVolume
 			formData.mileageStart = this.waybill.mileageStart
@@ -195,9 +199,6 @@ export default {
 		removeUts(key) {
 			this.uts.splice(key, 1)
 		},
-		// findWb() {
-		// 	this.waybill = this.waybills.filter(item => item.id === this.id) 
-		// },
 		changeWidth() {
 			if (this.milleageFinish) {
 				let width = this.milleageFinish.length * 12

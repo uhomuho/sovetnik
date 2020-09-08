@@ -38,7 +38,7 @@
 					tbody(
 						v-for='waybill in waybills[currentPage - 1]'
 						@click='goTo(waybill.id)')
-						tr
+						tr(@click='waybill.status.num == 2 ? goto(`/reports/waybills/${waybill.id}`) : waybill.status.num == 0 ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
 								:class='waybill.status.class') {{ waybill.id }}
 							td.car.is-paddingless
@@ -132,6 +132,9 @@ export default {
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
 			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${minutes}`
+		},
+		goto(path) {
+			return this.$router.push(path)
 		}
 	}
 }
