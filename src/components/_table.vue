@@ -36,9 +36,8 @@
 							th.status Статус
 
 					tbody(
-						v-for='waybill in waybills[currentPage - 1]'
-						@click='goTo(waybill.id)')
-						tr(@click='waybill.status.num == 2 ? goto(`/reports/waybills/${waybill.id}`) : waybill.status.num == 0 ? goto(`/waybills/close/${waybill.id}`) : null')
+						v-for='waybill in waybills[currentPage - 1]')
+						tr(@click='waybill.status.num == 2 ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.num == 0 ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
 								:class='waybill.status.class') {{ waybill.id }}
 							td.car.is-paddingless
@@ -120,10 +119,6 @@ export default {
 		]),
 		noWorkDistance(totalDistance, workDistance) {
 			return (totalDistance - workDistance).toFixed(2)
-		},
-		goTo(id) {
-			// this.$router.push({ path: `/waybills/${id}` })
-			console.log(id)
 		},
 		dateTimeStamp(unix) {
 			let date = new Date(unix),

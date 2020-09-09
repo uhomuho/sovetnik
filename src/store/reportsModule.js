@@ -17,7 +17,8 @@ export default {
 		filteredWaybillsReports: null,
 		carsList: null,
 		dateTo: dateTo ? dateTo : new Date(2020, 8, 20),
-		dateFrom: dateFrom ? dateFrom : new Date()
+		dateFrom: dateFrom ? dateFrom : new Date(),
+		waybillReport: null
 	},
 	getters: {
 		getWaybillsReports: state => state.waybillsReports,
@@ -48,9 +49,21 @@ export default {
 		},
 		setDateFrom(state, payload) {
 			state.dateFrom = payload.date.getTime()
+		},
+		setWaybillReport(state, payload) {
+			state.waybillReport = payload
 		}
 	},
 	actions: {
+		apiWaybillReport({ commit }, params) {
+			api.getWaybillReport(params)
+				.then(r => {
+					commit('setWaybillReport', r.data.waybill)
+				})
+				.catch(err => {
+					console.error(err)
+				})
+		},
 		apiWaybillsReport({ commit }) {
 			const count = 30
 
@@ -188,14 +201,6 @@ export default {
 			})
 
 			commit('setFilteredWaybillsReports', filteredData)
-		},
-		filterByCar({ commit, state }, filter) {
-			let waybills = state.waybillsReports
-
-			
-			if (filter.car !== "ALL") waybills = waybills.filter( waybill => waybill.car.name == filter.car )
-
-			commit('setFilteredWaybillsReports', waybills)
 		}
 	}
 }

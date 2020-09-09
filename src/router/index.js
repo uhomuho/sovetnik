@@ -97,11 +97,18 @@ export default new Router({
 					hidden: false
 				},
 				{
-					path: 'waybills/:id',
+					path: 'waybill',
 					name: 'WaybillReport',
 					component: WaybillReport,
 					hidden: true,
-					props: true
+					props: true,
+					children: [
+						{
+							path: ':id',
+							component: WaybillReport,
+							hidden: true
+						}
+					]
 				},
 				{
 					path: 'autograph',
