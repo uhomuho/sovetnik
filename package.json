@@ -7,7 +7,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "nodemon -L server.js",
-    "git": "git add . && git commit -m \"Frontend update\" && git push"
+    "git": "git add . && git commit -m \"$NAME\" && git push"
   },
   "dependencies": {
     "axios": "^0.20.0",
