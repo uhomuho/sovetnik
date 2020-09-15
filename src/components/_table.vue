@@ -20,8 +20,13 @@
 													.title Тип ТС
 													.field(v-for='(car, key) in carFilter')
 														.choose(
-															@mouseover='setCar(key)')
+															@mouseover='setCar(key)'
+															:class='key == choosenCar ? "selected" : null')
 															|{{ key }}
+													.field
+														.choose(
+															@click='setCar(null)')
+															|Все
 												.tile.is-child.is-8
 													.title Гос. номер
 													.columns.is-flex.is-multiline
@@ -29,7 +34,8 @@
 																v-if='choosenCar'
 																v-for='car in carFilter[choosenCar]')
 															.column-container.num(
-																@click='setSerial(car.serial)')
+																@click='setSerial(car.serial)'
+																:class='filter.serial == car.serial ? "selected" : null')
 																|{{car.registrationPlate}}
 
 							th.start 
@@ -108,7 +114,8 @@
 
 			nav.pagination(
 				role="navigation"
-				aria-label="pagination")
+				aria-label="pagination"
+				v-if='waybills.listWaybill.length !== 0')
 				p {{ waybillsOnPage }}/{{ waybills.count }}
 				.button.prev( 
 					@click='prevPage'
@@ -193,6 +200,12 @@ export default {
 		]),
 		setCar(name) {
 			this.choosenCar = name
+			if (name == null) {
+				this.getWaybills(this.filter)
+					.then(() => {
+						this.openedCarDropdown = false
+					})
+			}
 		},
 		toggleDropdown(e) {
 			if (!e.target.matches('.menu *')) {
@@ -223,6 +236,7 @@ export default {
 			setTimeout(() => {
 				this.getWaybills(this.filter)
 			})
+			this.openedCarDropdown = false
 		},
 		nextPage() {
 			if (!this.nextDisabled) {

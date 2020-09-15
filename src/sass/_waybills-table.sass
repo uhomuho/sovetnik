@@ -6,7 +6,7 @@
 		.table-container
 			-ms-overflow-style: none
 			scrollbar-width: none
-			min-height: 12rem
+			min-height: 4rem
 			margin-bottom: 0
 			overflow: visible
 			
@@ -86,12 +86,22 @@
 										.choose
 											font-size: .875rem
 											color: $graphite4
+											padding: .2rem .4rem
+											border-radius: 4px
 											cursor: pointer
+											&.selected
+												background-color: $graphite4
+												color: #fff
 										.num
 											font-family: 'Cabin', sans-serif
 											font-size: 1rem
 											color: $graphite4
+											padding: .2rem .4rem
+											border-radius: 4px
 											cursor: pointer
+											&.selected
+												background-color: $graphite4
+												color: #fff
 
 						&.start, &.finish
 							text-align: center
