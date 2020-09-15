@@ -250,7 +250,6 @@ export default {
 	},
 	beforeMount() {
 		this.apiCarsFilter()
-		console.log('xex')
 	}
 }
 
