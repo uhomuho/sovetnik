@@ -29,7 +29,6 @@
 							outline: none
 
 				.level-right
-					margin-left: 1.5rem
 					span
 						color: $graphite6
 		hr
@@ -43,6 +42,10 @@
 				margin: 0
 				&>.level-left
 					margin-right: 2.7rem
+				&>.level-right
+					.level
+						.level-right
+							color: $graphite6
 				.level-item
 					.level-item
 						font-size: 1.125rem
@@ -53,28 +56,29 @@
 						color: $blue4
 			hr:first-of-type
 				margin-top: 1rem
-			table
+			&>table
 				text-align: center
-				tr
-					th
-						font-size: .875rem
-						font-weight: normal
-						color: $graphite2
-						border: none
-						padding: 1.5rem 0 1rem
-					td
-						font-size: 1.125rem
-						color: $blue4
-						border: none
-						&.title
+				&>tbody
+					&>tr
+						th
+							font-size: .875rem
 							font-weight: normal
-							text-align: left
-							color: $graphite4
+							color: $graphite2
+							border: none
+							padding: 1.5rem 0 1rem
+						&>td
+							font-size: 1.125rem
+							color: $blue4
+							border: none
+							&.title
+								font-weight: normal
+								text-align: left
+								color: $graphite4
 
-						span
-							text-align: center
-							border-bottom: 1px solid $grey2
-							min-width: 5.7rem
+							&>span
+								text-align: center
+								border-bottom: 1px solid $grey2
+								min-width: 5.7rem
 				input
 					font-size: 1.125rem
 					text-align: center

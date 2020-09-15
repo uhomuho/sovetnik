@@ -18,10 +18,12 @@ export default {
 		carsList: null,
 		dateTo: dateTo ? dateTo : new Date(2020, 8, 20),
 		dateFrom: dateFrom ? dateFrom : new Date(),
-		waybillReport: null
+		waybillReport: null,
+		plateSearchKey: null
 	},
 	getters: {
 		getWaybillsReports: state => state.waybillsReports,
+		getWaybillReport: state => state.waybillReport,
 		getAutographReport: state => state.autographReport,
 		getTotalData: state => state.totalData,
 		getFilteredWaybillsReports: state => state.filteredWaybillsReports,
@@ -45,19 +47,22 @@ export default {
 		},
 		setDateTo(state, payload) {
 			state.dateTo = payload.date.getTime()
-			
 		},
 		setDateFrom(state, payload) {
 			state.dateFrom = payload.date.getTime()
 		},
 		setWaybillReport(state, payload) {
 			state.waybillReport = payload
+		},
+		setPlateSearchKey(state, payload) {
+			state.plateSearchKey = payload
 		}
 	},
 	actions: {
 		apiWaybillReport({ commit }, params) {
 			api.getWaybillReport(params)
 				.then(r => {
+					commit('setPlateSearchKey', r.data.waybill.car.registrationPlate)
 					commit('setWaybillReport', r.data.waybill)
 				})
 				.catch(err => {
@@ -131,17 +136,17 @@ export default {
 			let dateFrom 	= new Date(state.dateFrom),
 					dateTo 		= new Date(state.dateTo),
 					params 		= {
-				from: {
-					year: dateFrom.getFullYear(),
-					month: monthName.num[dateFrom.getMonth()],
-					day: dateFrom.getDate()
-				},
-				to: {
-					year: dateTo.getFullYear(),
-					month: monthName.num[dateTo.getMonth()],
-					day: dateTo.getDate()
-				}
-			}
+						from: {
+							year: dateFrom.getFullYear(),
+							month: monthName.num[dateFrom.getMonth()],
+							day: `${dateFrom.getDate()}`.length == 1 ? `0${dateFrom.getDate()}` : dateFrom.getDate() 
+						},
+						to: {
+							year: dateTo.getFullYear(),
+							month: monthName.num[dateTo.getMonth()],
+							day: `${dateTo.getDate()}`.length == 1 ? `0${dateTo.getDate()}` : dateTo.getDate() 	
+						}
+					}
 			api.getAutographReport(params)
 				.then(r => {
 					let report = r.data.data,

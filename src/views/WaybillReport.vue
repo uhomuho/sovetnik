@@ -19,17 +19,20 @@
 										input(
 											v-model="wbId"
 											placeholder="ID"
-											type="number")
+											type="number"
+											@input='getWaybill(wbId)')
 								.level-right
 									.level-item
 										|от
 										span {{ dateStringOf ? dateStringOf : "XX/XX/XXXX" }}
 				hr
 
-				.wrapper
+				.wrapper(v-if='waybill')
 					.item
 						p Гос. номер:
-						input.input( type="text" )
+						input.input( 
+							type="text"
+							v-model='registrationPlate')
 						.search.is-hidden
 
 					.item
@@ -37,11 +40,13 @@
 						.input
 						.search.is-hidden
 
-				hr
+				hr(v-if='waybill')
 
-				img( src="/img/canvas.png" )
+				img( 
+					src="/img/canvas.png"
+					v-if='waybill')
 
-				.tile.is-ancestor
+				.tile.is-ancestor(v-if='waybill')
 					.tile.is-parent.is-paddingless
 						.tile.is-child
 							p.title Сравнение данных
@@ -103,31 +108,36 @@
 											p Площаль УПИ,&nbsp;
 											p Блюхера&nbsp;
 
+							
 
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import monthName from '@/month'
 
 export default {
 	name: 'Report',
 	data() {
 		return {
-			wbId: this.id ? this.id : null
+			wbId: this.id ? this.id : null,
+			registrationPlate: this.waybill ? this.waybill.car.registrationPlate : null
 		}
 	},
 	components: {},
-	props: ['id'],
+	props: {
+		id: {
+			default: null
+		}
+	},
 	computed: {
-		...mapState('reports', {
-			waybill: state => state.waybillReport
+		...mapGetters('reports', {
+			waybill: 'getWaybillReport'
 		}),
 		dateStringOf() {
 			if (this.waybill) {
 				let date = new Date(this.waybill.of),
 						day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
-						
 				return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
 			} else {
 				return null
@@ -137,10 +147,15 @@ export default {
 	methods: {
 		...mapActions('reports', {
 			getWaybill: 'apiWaybillReport'
-		})
+		}),
+		// getWaybillData() {
+		// 	this.getWaybill(this.wbId)
+		// }
 	},
 	mounted() {
-		this.getWaybill(this.id)
+		if (this.id) {
+			this.getWaybill(this.id)
+		}
 	}
 }
 

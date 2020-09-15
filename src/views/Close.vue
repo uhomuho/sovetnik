@@ -19,14 +19,16 @@ div#main
 									input(
 										v-model="wbId"
 										placeholder="ID"
+										@input='getWaybill(wbId)'
 										type="number")
 							.level-right
-								.level-item
+								.level-item(v-if='closeWaybill')
 									|от
 									span {{ dateStringOf ? dateStringOf : "XX/XX/XXXX" }}
+								
 			hr
 
-			.wrapper(v-if='waybill')
+			.wrapper(v-if='closeWaybill')
 				.level
 					.level-left
 						.level-item
@@ -65,6 +67,10 @@ div#main
 								span {{ waybill.mileageStart.toLocaleString() }}
 							td 
 								span(v-html='dateTimeStringStart')
+								Calendar(
+									:range='false'
+									:time='true'
+									@select='setTimeStart')
 							td 
 								span {{ waybill.fuelStart }}
 						tr
@@ -113,7 +119,7 @@ import Calendar from '@/components/calendar/_calendar.vue'
 import api from '@/api/apiActions'
 
 export default {
-	name: 'CreateWaybill',
+	name: 'CloseWaybill',
 	data() {
 		return {
 			startTime: false,
@@ -133,18 +139,15 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters('waybills', [
-			'waybills'
-		]),
+		...mapGetters('waybills', {
+			closeWaybill: 'getCloseWaybill'
+		}),
+		waybill() {
+			// console.log(this.closeWaybill.waybill)
+			return this.closeWaybill.waybill
+		},
 		totalFuel() {
 			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
-		},
-		isIntegerId() {
-			return this.wbId == 'main'
-		},
-		waybill() {
-			if (this.wbId) return this.waybills.filter(item => item.id == this.wbId)[0]
-			return null
 		},
 		dateStringOf() {
 			if (this.waybill) {
@@ -174,10 +177,12 @@ export default {
 		}
 	},
 	methods: {
-		...mapActions('waybills', [
-			'getWaybills',
-			'waybillsSort'
-		]),
+		...mapActions('waybills', {
+			getWaybill: 'apiCloseWaybill'
+		}),
+		setTimeStart(date){
+			console.log(date)
+		},
 		closeWb() {
 			let formData = {}
 			formData.id = this.wbId
@@ -210,13 +215,10 @@ export default {
 		}
 	},
 	beforeMount() {
-		if (!this.waybills) {
+		if (this.id) {
 			this.isLoading = true
-			this.getWaybills()
-				.then(() => {
-					this.waybillsSort()
-					this.isLoading = false
-				})
+			this.getWaybill(this.id)
+				.then(() => this.isLoading = false)
 		}
 	}
 }

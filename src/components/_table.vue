@@ -1,6 +1,6 @@
 <template lang="pug">
 	.wrapper#waybills_table
-		.container(v-if='waybills[0]')
+		.container(v-if='waybills.listWaybill.length !== 0')
 			.table-container
 				table.table.is-fullwidth
 					thead
@@ -10,18 +10,18 @@
 								b-dropdown( aria-role="list" )
 									.wrapper(slot="trigger")
 										span Машина
-										img.icon( src="@/assets/icons/angle.svg" )
-									b-dropdown-item(
-										aria-role="lsititem"
-										:class='carFilter == null ? "active" : null' 
-										@click='setCarFilter(null), waybillsSort()')
-											span Все
+										//- img.icon( src="@/assets/icons/angle.svg" )
+									//- b-dropdown-item(
+									//- 	aria-role="lsititem"
+									//- 	:class='carFilter == null ? "active" : null' 
+									//- 	@click='setCarFilter(null), getWaybills()')
+									//- 		span Все
 									b-dropdown-item(
 										aria-role="listitem"
 										v-for='value in filterValues'
 										:key='value'
 										:class='carFilter == value ? "active" : null'
-										@click='setCarFilter(value), waybillsSort()')
+										@click='setCarFilter(value), getWaybills()')
 											span {{ value }}
 							th.start 
 								|Время
@@ -36,8 +36,8 @@
 							th.status Статус
 
 					tbody(
-						v-for='waybill in waybills[currentPage - 1]')
-						tr(@click='waybill.status.num == 2 ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.num == 0 ? goto(`/waybills/close/${waybill.id}`) : null')
+						v-for='waybill in waybills.listWaybill')
+						tr(@click='waybill.status.name == "CLOSE" ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.name == "OPEN" ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
 								:class='waybill.status.class') {{ waybill.id }}
 							td.car.is-paddingless
@@ -61,24 +61,35 @@
 								:class='waybill.status.class') 
 								|{{ waybill.status.text }}
 								router-link(
-									v-if='waybill.status.num == 2'
-									:to='`/waybills/report/${waybill.id}`')
+									v-if='waybill.status.name == "CLOSE"'
+									:to='`/reports/waybill/${waybill.id}`')
 									img.icon(
 										src="@/assets/icons/waybill-report.svg")
 								router-link(
-									v-if='waybill.status.num == 0'
-									:to='`/waybills/preview/${waybill.id}`')
+									v-if='waybill.status.name == "OPEN"'
+									:to='`/waybills/close/${waybill.id}`')
 									img.icon(
 										src="@/assets/icons/close-waybill.svg")
+			b-loading(
+				v-model='loading')
 			router-link.open(
 				to="/waybills/open")
 				b-button Открыть путевой лист
 
-			b-pagination(
-				:total='total'
-				per-page='7'
-				:simple='true'
-				v-model='currentPage')
+			nav.pagination(
+				role="navigation"
+				aria-label="pagination")
+				p {{ waybillsOnPage }}/{{ waybills.count }}
+				.button.prev( 
+					@click='prevPage'
+					:class='prevDisabled ? null : "active"'
+					role="button"
+					:disabled="prevDisabled" )
+				.button.next( 
+					@click='nextPage'
+					:class='nextDisabled ? null : "active"'
+					role="button"
+					:disabled="nextDisabled" )
 
 		.container(v-else)
 			.content
@@ -91,7 +102,8 @@
 
 <script>
 import monthName from '@/month'
-import { mapMutations, mapGetters, mapActions } from 'vuex'
+import { mapMutations, mapGetters, mapActions, mapState } from 'vuex'
+import config from '../../public/config.json'
 
 export default {
 	name: 'Table',
@@ -102,12 +114,27 @@ export default {
 	},
 	props: ['waybills', 'isLoading', 'total'],
 	computed: {
+		...mapState('waybills', {
+			loading: state => state.loading
+		}),
 		...mapGetters('waybills', {
 			filterValues: 'getCarFilterValues',
 			carFilter: 'getCarFilter'
 		}),
 		isEmpty() {
 			return this.waybills == {} ? true : false
+		},
+		waybillsOnPage() {
+			return (this.currentPage * config.waybillsPerPage) > this.waybills.size ? this.waybills.count : (this.currentPage * config.waybillsPerPage)
+		},
+		compPrev() {
+			return true
+		},
+		prevDisabled() {
+			return this.currentPage == 1 ? true : false
+		},
+		nextDisabled() {
+			return (this.currentPage * config.waybillsPerPage) < this.waybills.count ? false : true
 		}
 	},
 	methods: {
@@ -115,7 +142,7 @@ export default {
 			'setCarFilter'
 		]),
 		...mapActions('waybills', [
-			'waybillsSort'
+			'getWaybills'
 		]),
 		noWorkDistance(totalDistance, workDistance) {
 			return (totalDistance - workDistance).toFixed(2)
@@ -130,6 +157,18 @@ export default {
 		},
 		goto(path) {
 			return this.$router.push(path)
+		},
+		nextPage() {
+			if (!this.nextDisabled) {
+				this.currentPage += 1
+				this.getWaybills(this.currentPage)
+			}
+		},
+		prevPage() {
+			if (!this.prevDisabled) {
+				this.currentPage -= 1
+				this.getWaybills(this.currentPage)
+			}
 		}
 	}
 }

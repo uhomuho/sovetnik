@@ -32,6 +32,7 @@
 							@click='setDay(day.num)'
 							:class='compDay == day.unix ? "active" : null')
 							| {{day.num}}
+			//- p {{ new Date(compDay) }}
 		.footer(v-if='time')
 			.timepicker
 				.hours
@@ -126,20 +127,20 @@ export default {
 				currentHours: `${new Date().getHours()}`.length == 1 ? `0${new Date().getHours()}` : new Date().getHours(),
 				currentMinutes: this.minutesRound(new Date().getMinutes()),
 
-				selectedHours: null,
-				selectedMinutes: null
+				selectedHours: this.date ? this.date.getHours() : null,
+				selectedMinutes: this.date ? this.date.getMinutes() : null
 			},
 
-			selectedMonth: null,
-			selectedYear: null,
+			selectedMonth: this.date ? `${this.date.getMonth()}`.length == 1 ? `0${this.date.getMonth() + 1}` : `${this.date.getMonth()}` : null,
+			selectedYear: this.date ? this.date.getFullYear() : null,
 
 			currentDay:	new Date().getDate(),
-			selectedDay: null,
+			selectedDay: this.date ? this.date.getDate() : null,
 
 			weeks: []
 		}
 	},
-	props: ['dateStart', 'dateFinish', 'time', 'autograph', 'range'],
+	props: ['dateStart', 'dateFinish', 'time', 'autograph', 'range', 'date'],
 	computed: {
 		daysCount() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear,
@@ -151,7 +152,7 @@ export default {
 			return monthName.calendar[month]
 		},
 		compDay() {
-			return this.selectedDay
+			return new Date(`${this.selectedYear}-${this.date ? this.date.getMonth() + 1 : this.selectedMonth}-${this.selectedDay} 06:00`).getTime()
 		},
 		year() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear
@@ -173,7 +174,6 @@ export default {
 					day 		= this.selectedDay ? new Date(this.selectedDay).getDate() : new Date(this.currentDay).getDate(),
 					hours 	= this.timepicker.selectedHours ? this.timepicker.selectedHours : this.timepicker.currentHours,
 					minutes = this.timepicker.selectedMinutes ? this.timepicker.selectedMinutes : this.timepicker.currentMinutes
-
 			return new Date(`${year}-${month}-${day}, ${hours}:${minutes}`)
 		}
 	},
@@ -230,6 +230,7 @@ export default {
 
 			this.timepicker.selectedHours = hours == 24 ? '00' : (`${hours}`.length == 1 ? `0${hours}` : hours)
 
+			console.log(this.selectedDate)
 			this.$emit('select', {
 				date: this.selectedDate
 			})
@@ -380,6 +381,7 @@ export default {
 				td
 					padding: .2rem .1rem
 					border-radius: 4px
+					border: unset
 					cursor: pointer
 					font-size: .875rem
 					&:hover

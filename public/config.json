@@ -1,3 +1,4 @@
 {
-	"url": "http://tomcat.utyf.ru/advisor/"
+	"url": "http://tomcat.utyf.ru/advisor/",
+	"waybillsPerPage": 4
 }

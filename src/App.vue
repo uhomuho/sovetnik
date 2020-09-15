@@ -8,7 +8,6 @@
 
 <script>
 import Sidebar from '@/components/_sidebar'
-import { mapActions } from 'vuex'
 
 export default {
   name: 'App',
@@ -20,19 +19,6 @@ export default {
 			breadcrumbs: this.$router.currentRoute.meta.breadcrumbs,
 			routes: this.$router.options.routes
 		}
-	},
-	methods: {
-		...mapActions('waybills', [
-			'waybillsSort',
-			'getWaybills'
-		])
-	},
-	beforeMount() {
-		this.getWaybills()
-			.then(() => {
-				this.waybillsSort()
-					.then(() => this.isLoading = false)
-			})
 	}
 }
 </script>

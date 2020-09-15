@@ -6,7 +6,7 @@
 		.table-container
 			-ms-overflow-style: none
 			scrollbar-width: none
-			min-height: 14.37rem
+			min-height: 12rem
 			margin-bottom: 0
 			overflow: visible
 			
@@ -193,4 +193,33 @@
 				mix-blend-mode: multiply
 				box-shadow: 0 1px 0 $grey2
 				border: none
-				border-radius: 0								
+				border-radius: 0
+
+		.pagination
+			@include flex(flex-start, center)
+			padding-left: 1rem
+			.button
+				@include flex(center, center)
+				background-color: #fff
+				width: 2rem
+				height: 2rem
+				padding: .5rem
+				margin-left: 1rem
+				border: 1px solid $graphite2
+				box-shadow: 0 1px 0 $graphite4
+				opacity: .3
+				&.active
+					opacity: 1
+				&::before
+					display: block
+					content: ""
+					width: .5rem
+					height: .5rem
+					border-top: 2px solid $graphite4
+					border-right: 2px solid $graphite4
+					transform: translateX(-2px) rotate(45deg)
+				&.prev::before
+					transform: translateX(1px) rotate(225deg)
+				&.active:active
+					box-shadow: inset 0 1px 0 $graphite4
+			

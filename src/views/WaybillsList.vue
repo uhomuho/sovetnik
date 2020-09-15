@@ -1,5 +1,5 @@
 <template lang="pug">
-	div
+	div( @click='close' )
 		.section
 			.container
 				.level
@@ -14,54 +14,47 @@
 							table
 								tr
 									td(
-										@click='setFilter("year"), waybillsSort()'
+										@click='setFilter("year"), getWaybills(0)'
 										:class='filterType == "year" ? "active" : null') весь год
 									td(
-										@click='setFilter("yest"), waybillsSort()'
+										@click='setFilter("yest"), getWaybills(0)'
 										:class='filterType == "yest" ? "active" : null') вчера
 								tr
 									td(
-										@click='setFilter("month"), waybillsSort()'
+										@click='setFilter("month"), getWaybills(0)'
 										:class='filterType == "month" ? "active" : null') месяц
 									td(
-										@click='setFilter("today"), waybillsSort()'
+										@click='setFilter("today"), getWaybills(0)'
 										:class='filterType == "today" ? "active" : null') сегодня
 								tr
 									td(
-										@click='setFilter("week"), waybillsSort()'
+										@click='setFilter("week"), getWaybills(0)'
 										:class='filterType == "week" ? "active" : null') неделя
 									td(
-										@click='setFilter("range"), waybillsSort()'
+										@click='setFilter("range"), getWaybills(0)'
 										:class='filterType == "range" ? "active" : null') период
 						.level-item
-							b-datepicker.first(
-								@input='setFrom(range.dateFrom), waybillsSort()'
-								v-model='range.dateFrom'
-								:focused-date='dateFrom'
-								:max-date='dateTo'
-								loacale="ru-RU"
-								:mobile-native='true'
-								position='is-bottom-left')
-								template( v-slot:trigger )
-									.wrapper
-										p {{ stringFrom }}
-							
-							b-datepicker.second(
-								@input='setTo(range.dateTo), waybillsSort()'
-								v-model='range.dateTo'
-								:focused-date='range.dateTo'
-								:min-date='dateFrom'
-								loacale="ru-RU"
-								:mobile-native='true'
-								position='is-bottom-left')
-								template( v-slot:trigger )
-									.wrapper 
-										p {{ stringTo }}
+							.wrapper.from(
+								@click='openFrom')
+								p {{ stringFrom }}
+								Calendar(
+									:class='showFrom ? null : "is-hidden"'
+									@select='setFrom'
+									:time='false',
+									:date='dateFrom')
+							.wrapper.to(
+								@click='openTo')
+								p {{ stringTo }}
+								Calendar(
+									:class='showTo ? null : "is-hidden"'
+									@select='setTo'
+									:time='false',
+									:date='dateTo')
 
 				hr
 				Table(
-					v-if='waybillsSortData'
-					:waybills='waybillsSortData'
+					v-if='waybills'
+					:waybills='waybills'
 					:total='total'
 					:isLoading='isLoading')
 
@@ -74,14 +67,15 @@
 
 <script>
 import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
-// import { mapGetters } from 'vuex'
 import monthName from '@/month'
 import Table from '@/components/_table'
+import Calendar from '@/components/calendar/_calendar.vue'
 
 export default {
 	name: 'Reports',
 	components: {
-		Table
+		Table,
+		Calendar
 	},
 	data() {
 		return {
@@ -89,15 +83,13 @@ export default {
 			happens: 20,
 			expired: 12,
 			fixed: 5,
-			range: {
-				dateTo: this.dateTo,
-				dateFrom: this.dateFrom
-			}
+			showTo: false,
+			showFrom: false
 		}
 	},
 	computed: {
 		...mapGetters('waybills', {
-			waybillsSortData: 'waybillsSortData',
+			waybills: 'waybills',
 			total: 'total',
 			filterType: 'getFilterType'
 		}),
@@ -119,20 +111,51 @@ export default {
 			'setDates'
 		]),
 		...mapMutations('waybills', {
-			setTo: 'dateTo',
-			setFrom: 'dateFrom',
+			setDateTo: 'dateTo',
+			setDateFrom: 'dateFrom',
 			setFilter: 'setFilterType'
-		})
+		}),
+		setTo(e) {
+			this.setDateTo(e)
+
+			setTimeout(() => {
+				this.getWaybills()
+			}, 50)
+		},
+		setFrom(e) {
+			this.setDateFrom(e)
+
+			setTimeout(() => {
+				this.getWaybills()
+			}, 50)
+		},
+		openTo(e) {
+			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
+				this.showTo = !this.showTo
+			}
+		},
+		openFrom(e) {
+			if(e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+				this.showFrom = !this.showFrom
+			}
+		},
+		close(e) {
+			if(!e.target.matches('.calendar *, .wrapper.to *, .wrapper.from *')) {
+				if (this.showTo) {
+					this.showTo = false
+				}
+				if (this.showFrom) {
+					this.showFrom = false
+				}
+			}
+		}
 	},
 	mounted() {
 
 		if (!this.waybillsSortData) {
 			this.isLoading = true
 			this.getWaybills()
-				.then(() => {
-					this.waybillsSort()
-						.then(() => this.isLoading = false)
-				})
+				.then(() => this.isLoading = false)
 		}
 	},
 	beforeMount() {
@@ -206,21 +229,23 @@ export default {
 								&.active
 									color: $orange4
 
-						.datepicker
+						.wrapper
+							text-align: left
 							width: 100%
-
-							.wrapper
-								text-align: left
-								width: 100%
-								padding: .8rem 1.25rem
-								border: 1px dashed #D0D9DE
-								border-bottom: unset
-								cursor: pointer
-								user-select: none
-
-								p
-									font-size: .875rem
-									font-weight: 500
-									color: $graphite4
+							padding: .8rem 1.25rem
+							border: 1px dashed #D0D9DE
+							border-bottom: unset
+							cursor: pointer
+							user-select: none
+							position: relative
+							p
+								font-size: .875rem
+								font-weight: 500
+								color: $graphite4
+							.calendar 
+								position: absolute
+								top: 100%
+								left: 0
+								z-index: 99
 
 </style>

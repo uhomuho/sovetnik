@@ -14,22 +14,26 @@ export default {
 	namespaced: true,
 	state: {
 		waybills: waybills ? JSON.parse(waybills) : null,
+		waybill: null,
 		waybillsSort: null,
 		dateFrom: dateFrom ? new Date(dateFrom) : null,
 		dateTo: dateTo ? new Date(dateTo) : null,
 		total: null,
 		filterType: filterType ? filterType : "range",
 		carFilter: null,
+		closeWaybill: null,
 		carFilterValues: [],
 		newWaybill: newWaybill ? JSON.parse(newWaybill) : null,
 		newListDrivers: newListDrivers ? JSON.parse(newListDrivers) : null,
-		newListCar: newListCar ? JSON.parse(newListCar) : null
+		newListCar: newListCar ? JSON.parse(newListCar) : null,
+		loading: false
 	},
 	getters: {
 		getNewWaybill: state => state.newWaybill,
 		getNewListDrivers: state => state.newListDrivers,
 		getNewListCar: state => state.newListCar,
 		waybills: state => state.waybills,
+		getCloseWaybill: state => state.closeWaybill,
 		waybillsSortData: state => state.waybillsSort,
 		getPagesCount: state => state.pagesCount,
 		total: state => state.total,
@@ -40,13 +44,14 @@ export default {
 	mutations: {
 		waybills: (state, payload) => state.waybills = payload,
 		waybillsSort: (state, payload) => state.waybillsSort = payload,
+		setCloseWaybill: (state, payload) => state.closeWaybill = payload,
 		dateFrom (state, payload) {
-			state.dateFrom = payload
-			localStorage.setItem('dateFrom', payload)
+			state.dateFrom = payload.date
+			localStorage.setItem('dateFrom', payload.date)
 		},
 		dateTo (state, payload) {
-			state.dateTo = payload
-			localStorage.setItem('dateTo', payload)
+			state.dateTo = payload.date
+			localStorage.setItem('dateTo', payload.date)
 		},
 		setFilterType (state, payload) {
 			state.filterType = payload
@@ -79,29 +84,195 @@ export default {
 		}
 	},
 	actions: {
-		async getWaybills ({ commit }) {
-			await api.getWaybills()
-				.then(res => {
-					let waybills = res.data.listWaybill			
-					for (var index in waybills) {
-						if (waybills[index].car !== null) {
-							let model = waybills[index].car.model
-							let registrationPlate = waybills[index].car.registrationPlate
-							if (model !== null) waybills[index].car.model = model.replace(registrationPlate, '').trim()
+		async getWaybills ({ commit, state }, page) {
+			state.loading = true
+			let curYear 		= new Date().getFullYear(),
+					curMonth 		= monthName.num[new Date().getMonth()],
+					curDay 			= new Date().getDate(),
+					timezone 		= new Date().getTimezoneOffset()/60,
+					params,
+					curWeekDay,
+					weekStart,
+					weekEnd
 
-							for (var key in waybills[index]) {
-								let field = waybills[index][key]
+			if ( `${timezone}`.includes('-') ) {
+				timezone = `${timezone}`.replace('-', '%2B0') + ':00'
+			} else {
+				timezone = `%2D0${timezone}:00`
+			}
+
+			switch(state.filterType) {
+
+				// Filter by year
+				case "year":
+					params = {
+						from: {
+							year: new Date().getFullYear(),
+							month: '01',
+							day: '01',
+							timezone: timezone
+						},
+						to: {
+							year: new Date().getFullYear(),
+							month: '12',
+							day: '31',
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+
+				// Filter by yestarday
+				case "yest":
+					params = {
+						from: {
+							year: curYear,
+							month: curMonth,
+							day: curDay - 1,
+							timezone: timezone
+						},
+						to: {
+							year: curYear,
+							month: curMonth,
+							day: curDay - 1,
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+
+				// Filter by month
+				case "month":
+					params = {
+						from: {
+							year: curYear,
+							month: curMonth,
+							day: '01',
+							timezone: timezone
+						},
+						to: {
+							year: curYear,
+							month: curMonth,
+							day: new Date(curYear, curMonth, 0).getDate(),
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+
+				// Filter by today
+				case "today":
+					params = {
+						from: {
+							year: curYear,
+							month: curMonth,
+							day: curDay,
+							timezone: timezone
+						},
+						to: {
+							year: curYear,
+							month: curMonth,
+							day: curDay,
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+
+				// Filter by week
+				case "week":
+					curWeekDay 	= new Date().getDay() - 1
+					weekStart 	= curDay - curWeekDay
+					weekEnd 		= weekStart + 6
+					params = {
+						from: {
+							year: curYear,
+							month: curMonth,
+							day: weekStart,
+							timezone: timezone
+						},
+						to: {
+							year: curYear,
+							month: curMonth,
+							day: weekEnd,
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+
+				// Filter by range
+				case "range":
+					params 			= {
+						from: {
+							year: state.dateFrom.getFullYear(),
+							month: monthName.num[state.dateFrom.getMonth()],
+							day: `${state.dateFrom.getDate()}`.length == 1 ? `0${state.dateFrom.getDate()}` : state.dateFrom.getDate(),
+							timezone: timezone
+						},
+						to: {
+							year: state.dateTo.getFullYear(),
+							month: monthName.num[state.dateTo.getMonth()],
+							day: `${state.dateTo.getDate()}`.length == 1 ? `0${state.dateTo.getDate()}` : state.dateTo.getDate(),
+							timezone: timezone
+						},
+						page: page
+					}
+					break;
+			}
+			await api.getWaybills(params)
+				.then(res => {
+					state.loading = false
+					let waybills = res.data
+					for (var index in waybills.listWaybill) {
+						if (waybills.listWaybill[index].car !== null) {
+							let model = waybills.listWaybill[index].car.model
+							let registrationPlate = waybills.listWaybill[index].car.registrationPlate
+							if (model !== null) waybills.listWaybill[index].car.model = model.replace(registrationPlate, '').trim()
+
+							for (var key in waybills.listWaybill[index]) {
+								let field = waybills.listWaybill[index][key]
 								if (typeof field == 'number') {
 									if (!Number.isInteger(field)) {
-										waybills[index][key] = waybills[index][key].toFixed(2).replace(".", ",")
+										waybills.listWaybill[index][key] = waybills.listWaybill[index][key].toFixed(2).replace(".", ",")
 									}
 								}
 							}
 						}
+						switch(waybills.listWaybill[index].status) {
+							case "OPEN":
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name 	= "OPEN"
+								waybills.listWaybill[index].status.text 	= 'Открыт'
+								waybills.listWaybill[index].status.class 	= 'opened'
+								break
+							case "CHECK":
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CHECK"
+								waybills.listWaybill[index].status.text 	= 'Проверка'
+								waybills.listWaybill[index].status.class 	= 'check'
+								break
+							case "CLOSE":
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CLOSE"
+								waybills.listWaybill[index].status.text 	= 'Закрыт'
+								waybills.listWaybill[index].status.class 	= 'closed'
+								break
+							case "ERROR":
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CHECK"
+								waybills.listWaybill[index].status.text 	= 'Проверка'
+								waybills.listWaybill[index].status.class 	= 'check'
+								break
+						}
+						waybills.size = waybills.listWaybill.length
 					}
-					waybills = waybills.filter(item => item.car !== null)
 					commit('waybills', waybills)
 					localStorage.setItem('waybills', JSON.stringify(waybills))
+				})
+				.catch(err => {
+					console.log(err)
+					state.loading = false
 				})
 		},
 		async getNewWaybillData ({ commit }) {
@@ -118,119 +289,27 @@ export default {
 					})
 				})
 		},
+		async apiCloseWaybill({ commit }, id) {
+			await api.getCloseWaybill(id)
+				.then(r => commit('setCloseWaybill', r.data))
+				.catch(err => {
+					console.error(err)
+					commit('setCloseWaybill', null)
+				})
+		},
 		waybillsSort ({ commit, state }) {
-			let waybills 		= state.waybills,
-					itemYear 		= (unix) => new Date(unix).getFullYear(),
-					itemMonth 	= (unix) => monthName.num[new Date(unix).getMonth()],
-					itemDay 		= (unix) => new Date(unix).getDate(),
-					itemHours 	= (unix) => new Date(unix).getHours(),
-					itemMinutes = (unix) => new Date(unix).getMinutes(),
-					curYear 		= new Date().getFullYear(),
-					curMonth 		= monthName.num[new Date().getMonth()],
-					curDay 			= new Date().getDate()
+			let waybills 		= state.waybills.listWaybill
+					// itemYear 		= (unix) => new Date(unix).getFullYear(),
+					// itemMonth 	= (unix) => monthName.num[new Date(unix).getMonth()],
+					// itemDay 		= (unix) => new Date(unix).getDate(),
+					// itemHours 	= (unix) => new Date(unix).getHours(),
+					// itemMinutes = (unix) => new Date(unix).getMinutes(),
 
-			
-			switch(state.filterType) {
-
-				// Filter by year
-				case "year":
-					waybills = waybills.filter(item => {
-						let itemYear = new Date(item.of).getFullYear()
-						if (itemYear == curYear && item.of !== null) return item
-					})
-					break;
-
-				// Filter by yestarday
-				case "yest":
-					waybills = waybills.filter(item => {
-						let dateTo = new Date(`${curYear}-${curMonth}-${curDay-1} 19:00`),
-								dateFrom = new Date(`${curYear}-${curMonth}-${curDay-1} 7:00`),
-								itemDate = new Date(`${itemYear(item.of)}-${itemMonth(item.of)}-${itemDay(item.of)}`)
-
-						if ((itemDate.getTime() == dateTo.getTime() || itemDate.getTime() < dateTo.getTime()) && (itemDate.getTime() == dateFrom.getTime() || itemDate.getTime() > dateFrom.getTime())) return item
-					})
-					break;
-
-				// Filter by month
-				case "month":
-					waybills = waybills.filter(item => {
-						let userDate = `${curYear}-${curMonth}`,
-								itemDate = `${itemYear(item.of)}-${itemMonth(item.of)}`
-						if (userDate == itemDate && item.of !== null) return item
-					})
-					break;
-
-				// Filter by today
-				case "today":
-					waybills = waybills.filter(item => {
-						let dateFrom 	= new Date(`${curYear}-${curMonth}-${curDay} 7:00`),
-								dateTo 		= new Date(`${curYear}-${curMonth}-${curDay} 19:00`),
-								itemDate = new Date(`${itemYear(item.of)}-${itemMonth(item.of)}-${itemDay(item.of)} ${itemHours(item.of)}:${itemMinutes(item.of)}`)
-								
-						if ((itemDate.getTime() == dateTo.getTime() || itemDate.getTime() < dateTo.getTime()) && (itemDate.getTime() == dateFrom.getTime() || itemDate.getTime() > dateFrom.getTime())) return item
-					})
-					break;
-
-				// Filter by week
-				case "week":
-					waybills = waybills.filter(item => {
-						let curWeekDay 	= new Date().getDay() - 1,
-								weekStart 	= curDay - curWeekDay,
-								weekEnd 		= weekStart + 6,
-								dateFrom 		= new Date(`${curYear}-${curMonth}-${weekStart} 7:00`).getTime(),
-								dateTo 			= new Date(`${curYear}-${curMonth}-${weekEnd} 19:00`).getTime()
-						
-						if ((item.of < dateTo || item.of > dateFrom) && item.of !== 0) return item
-					})
-					break;
-
-				// Filter by range
-				case "range":
-					waybills = waybills.filter(item => {
-						let itemDate = new Date(`${itemYear(item.of)}-${itemMonth(item.of)}-${itemDay(item.of)} ${itemHours(item.of)}:${itemMinutes(item.of)}`).getTime()
-						
-						if ((itemDate == state.dateTo.getTime() || itemDate < state.dateTo.getTime()) && (itemDate == state.dateFrom.getTime() || itemDate > state.dateFrom.getTime())) return item
-					})
-					break;
-			}
 
 			let pagesCount = Math.ceil(waybills.length/4),
 					sortWaybills = {},
 					carFilterValues = []
 
-			for (var waybill of waybills) {
-				
-				if (waybill.status)
-					switch(waybill.status) {
-						case "OPEN":
-							waybill.status = {}
-							waybill.status.name 	= "OPEN"
-							waybill.status.num  	= 0
-							waybill.status.text 	= 'Открыт'
-							waybill.status.class 	= 'opened'
-							break;
-						case "CHECK":
-							waybill.status.name = "CHECK"
-							waybill.status.num  = 1
-							waybill.status.text 	= 'Проверка'
-							waybill.status.class 	= 'check'
-							break;
-						case "CLOSE":
-							waybill.status = {}
-							waybill.status.name = "CLOSE"
-							waybill.status.num  = 2
-							waybill.status.text 	= 'Закрыт'
-							waybill.status.class 	= 'closed'
-							break;
-					}
-					waybill.startFact = new Date().getTime()
-					waybill.startPlan = new Date().getTime()
-					waybill.finishFact = new Date().getTime()
-					waybill.finishPlan = new Date().getTime()
-
-					waybill.workText = 'Уборка участка Кировский район улица Комсомольская 89, пятый двор'
-				carFilterValues.push(waybill.car.model)
-			}
 			carFilterValues = carFilterValues.filter((v, i, a) => a.indexOf(v) === i)
 			state.carFilterValues = carFilterValues
 
