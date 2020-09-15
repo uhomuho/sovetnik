@@ -20,13 +20,13 @@ export default {
 		dateTo: dateTo ? new Date(dateTo) : null,
 		total: null,
 		filterType: filterType ? filterType : "range",
-		carFilter: null,
 		closeWaybill: null,
-		carFilterValues: [],
 		newWaybill: newWaybill ? JSON.parse(newWaybill) : null,
 		newListDrivers: newListDrivers ? JSON.parse(newListDrivers) : null,
 		newListCar: newListCar ? JSON.parse(newListCar) : null,
-		loading: false
+		loading: false,
+		status: ["CLOSE"],
+		carsFilter: null
 	},
 	getters: {
 		getNewWaybill: state => state.newWaybill,
@@ -38,8 +38,7 @@ export default {
 		getPagesCount: state => state.pagesCount,
 		total: state => state.total,
 		getFilterType: state => state.filterType,
-		getCarFilter: state => state.carFilter,
-		getCarFilterValues: state => state.carFilterValues
+		getCarsFilter: state => state.carsFilter
 	},
 	mutations: {
 		waybills: (state, payload) => state.waybills = payload,
@@ -57,7 +56,6 @@ export default {
 			state.filterType = payload
 			localStorage.setItem('filterType', payload)
 		},
-		setCarFilter: (state, payload) => state.carFilter = payload,
 		setAllNewWaybillData (state, payload) {
 			if (payload.waybill) {
 				state.newWaybill = payload.waybill
@@ -81,15 +79,19 @@ export default {
 		setListCars(state, payload) {
 			state.newListCar = payload
 			localStorage.setItem('newListCar', JSON.stringify(state.newListCar))
+		},
+		setCarsFilter(state, payload) {
+			state.carsFilter = payload.groups
 		}
 	},
 	actions: {
-		async getWaybills ({ commit, state }, page) {
+		async getWaybills ({ commit, state }, filter) {
 			state.loading = true
 			let curYear 		= new Date().getFullYear(),
 					curMonth 		= monthName.num[new Date().getMonth()],
 					curDay 			= new Date().getDate(),
 					timezone 		= new Date().getTimezoneOffset()/60,
+					page 				= filter && filter.page ? filter.page : null,
 					params,
 					curWeekDay,
 					weekStart,
@@ -220,6 +222,8 @@ export default {
 					}
 					break;
 			}
+			params.status = filter && filter.status ? filter.status.join(',') : null
+			params.serial = filter && filter.serial ? filter.serial : null
 			await api.getWaybills(params)
 				.then(res => {
 					state.loading = false
@@ -297,42 +301,14 @@ export default {
 					commit('setCloseWaybill', null)
 				})
 		},
-		waybillsSort ({ commit, state }) {
-			let waybills 		= state.waybills.listWaybill
-					// itemYear 		= (unix) => new Date(unix).getFullYear(),
-					// itemMonth 	= (unix) => monthName.num[new Date(unix).getMonth()],
-					// itemDay 		= (unix) => new Date(unix).getDate(),
-					// itemHours 	= (unix) => new Date(unix).getHours(),
-					// itemMinutes = (unix) => new Date(unix).getMinutes(),
-
-
-			let pagesCount = Math.ceil(waybills.length/4),
-					sortWaybills = {},
-					carFilterValues = []
-
-			carFilterValues = carFilterValues.filter((v, i, a) => a.indexOf(v) === i)
-			state.carFilterValues = carFilterValues
-
-			if (state.carFilter !== null) waybills = waybills.filter(item => item.car.model == state.carFilter)
-
-			for (var i = 0; i < pagesCount; i++) {
-				let waybillsCount = (i + 1) * 8,
-						y	= 8 * i
-						
-				sortWaybills[i] = []
-				for (y; y < waybillsCount; y++) {
-					if (waybills[y]) sortWaybills[i].push(waybills[y])
-				}
-			}
-
-			let total = 0
-
-			for (var page in sortWaybills) {
-				total += sortWaybills[page].length
-			}
-			
-			state.total = total
-			commit('waybillsSort', sortWaybills)
+		async apiCarsFilter({ commit }) {
+			api.getCarsFilter()
+				.then(r => {
+					commit('setCarsFilter', r.data)
+				})
+				.catch(err => {
+					console.error(err)
+				})
 		},
 		setDates ({ commit, state }) {
 			let date = new Date()

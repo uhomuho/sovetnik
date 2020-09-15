@@ -32,7 +32,6 @@
 							@click='setDay(day.num)'
 							:class='compDay == day.unix ? "active" : null')
 							| {{day.num}}
-			//- p {{ new Date(compDay) }}
 		.footer(v-if='time')
 			.timepicker
 				.hours

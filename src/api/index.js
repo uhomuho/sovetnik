@@ -6,9 +6,9 @@ axios.defaults.headers.common['Content-Type'] = 'application/json'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
 
 export default () => {
-	const url = config.url,
+	const url = config["Адрес сервера"],
 				axiosInstance = axios.create({
-					baseURL: `https://uhomuhoproxy.herokuapp.com/${url}`
+					baseURL: `${config["Использование прокси"] ? 'https://uhomuhoproxy.herokuapp.com/' : ''}${url}`
 				}),
 				isHandlerEnabled = (config = {}) => !config.handlerEnabled,
 				errorHandler = error => {

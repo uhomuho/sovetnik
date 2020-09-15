@@ -20,6 +20,7 @@
 								b-dropdown-item(
 									aria-role="list-item"
 									v-for="car in carsList"
+									:key='car'
 									@click='setCar(car)'
 									:class='car == filter.car ? "is-active" : null')
 									|{{ car }}
@@ -129,8 +130,7 @@ export default {
 	},
 	methods: {
 		...mapActions('reports', {
-			filterReports: 'filterReports',
-			filterByCar: 'filterByCar'
+			filterReports: 'filterReports'
 		}),
 		choose() {
 			setTimeout(()=>{
@@ -139,7 +139,6 @@ export default {
 		},
 		setCar(val) {
 			this.filter.car = val
-			// this.filter.status = ["CLOSE", "CHECK", "OPEN"]
 			this.filterReports(this.filter)
 		},
 		openDropdown(e) {

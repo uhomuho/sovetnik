@@ -1,28 +1,37 @@
 <template lang="pug">
-	.wrapper#waybills_table
-		.container(v-if='waybills.listWaybill.length !== 0')
+	.wrapper#waybills_table(@click='close')
+		.container
 			.table-container
 				table.table.is-fullwidth
 					thead
 						tr
 							th.id №
 							th.car 
-								b-dropdown( aria-role="list" )
-									.wrapper(slot="trigger")
-										span Машина
-										//- img.icon( src="@/assets/icons/angle.svg" )
-									//- b-dropdown-item(
-									//- 	aria-role="lsititem"
-									//- 	:class='carFilter == null ? "active" : null' 
-									//- 	@click='setCarFilter(null), getWaybills()')
-									//- 		span Все
-									b-dropdown-item(
-										aria-role="listitem"
-										v-for='value in filterValues'
-										:key='value'
-										:class='carFilter == value ? "active" : null'
-										@click='setCarFilter(value), getWaybills()')
-											span {{ value }}
+								.dropdown(
+									@click='toggleCarDropdown'
+									:class='openedCarDropdown ? "is-active" : null')
+									p Машина
+									img.icon( src="@/assets/icons/angle.svg" )
+
+									.menu(v-if='openedCarDropdown && carFilter')
+										.tile.is-ancestor
+											.tile.is-parent
+												.tile.is-child
+													.title Тип ТС
+													.field(v-for='(car, key) in carFilter')
+														.choose(
+															@mouseover='setCar(key)')
+															|{{ key }}
+												.tile.is-child.is-8
+													.title Гос. номер
+													.columns.is-flex.is-multiline
+														.column.is-4(
+																v-if='choosenCar'
+																v-for='car in carFilter[choosenCar]')
+															.column-container.num(
+																@click='setSerial(car.serial)')
+																|{{car.registrationPlate}}
+
 							th.start 
 								|Время
 								br
@@ -33,9 +42,27 @@
 								|возвращения
 							th.task Задание
 							th.driver Водитель
-							th.status Статус
+							th.status 
+								.dropdown(
+									@click='toggleDropdown'
+									:class='openedDropdown ? "is-active" : null')
+									p Статус
+									img.icon( src="@/assets/icons/angle.svg" )
+
+									.menu(v-if='openedDropdown')
+										.field(v-for='status in statusList')
+											.control
+												input(
+													type="checkbox"
+													:id='status.id'
+													:value='status.name'
+													v-model='filter.status',
+													@input='setStatus')
+												label.checkbox(:for='status.id')
+													|{{ status.text }}
 
 					tbody(
+						v-if='waybills.listWaybill.length !== 0'
 						v-for='waybill in waybills.listWaybill')
 						tr(@click='waybill.status.name == "CLOSE" ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.name == "OPEN" ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
@@ -72,6 +99,9 @@
 										src="@/assets/icons/close-waybill.svg")
 			b-loading(
 				v-model='loading')
+			.container(v-if='waybills.listWaybill.length == 0')
+				.content
+					span.subtitle.has-text-warning Нет путевых листов по заданным параметрам
 			router-link.open(
 				to="/waybills/open")
 				b-button Открыть путевой лист
@@ -91,13 +121,6 @@
 					role="button"
 					:disabled="nextDisabled" )
 
-		.container(v-else)
-			.content
-				span.subtitle.has-text-warning Нет путевых листов за данный период
-				router-link.open(
-					to="/waybills/open")
-					b-button Открыть путевой лист
-
 </template>
 
 <script>
@@ -109,7 +132,31 @@ export default {
 	name: 'Table',
 	data() {
 		return {
-			currentPage: 1
+			currentPage: 1,
+			filter: {
+				status: [],
+				serial: null
+			},
+			statusList: [
+				{
+					name: "CLOSE",
+					text: "Закрыт",
+					id: 	"close"
+				},
+				{
+					name: "OPEN",
+					text: "Открыт",
+					id: 	"open"
+				},
+				{
+					name: "CHECK,ERROR",
+					text: "Проверка",
+					id: 	"check"
+				}
+			],
+			openedDropdown: false,
+			openedCarDropdown: false,
+			choosenCar: null
 		}
 	},
 	props: ['waybills', 'isLoading', 'total'],
@@ -118,14 +165,13 @@ export default {
 			loading: state => state.loading
 		}),
 		...mapGetters('waybills', {
-			filterValues: 'getCarFilterValues',
-			carFilter: 'getCarFilter'
+			carFilter: 'getCarsFilter'
 		}),
 		isEmpty() {
 			return this.waybills == {} ? true : false
 		},
 		waybillsOnPage() {
-			return (this.currentPage * config.waybillsPerPage) > this.waybills.size ? this.waybills.count : (this.currentPage * config.waybillsPerPage)
+			return (this.currentPage * config["Количество путевых листов на странице"]) > this.waybills.size ? this.waybills.count : (this.currentPage * config["Количество путевых листов на странице"])
 		},
 		compPrev() {
 			return true
@@ -134,7 +180,7 @@ export default {
 			return this.currentPage == 1 ? true : false
 		},
 		nextDisabled() {
-			return (this.currentPage * config.waybillsPerPage) < this.waybills.count ? false : true
+			return (this.currentPage * config["Количество путевых листов на странице"]) < this.waybills.count ? false : true
 		}
 	},
 	methods: {
@@ -142,8 +188,17 @@ export default {
 			'setCarFilter'
 		]),
 		...mapActions('waybills', [
-			'getWaybills'
+			'getWaybills',
+			'apiCarsFilter'
 		]),
+		setCar(name) {
+			this.choosenCar = name
+		},
+		toggleDropdown(e) {
+			if (!e.target.matches('.menu *')) {
+				this.openedDropdown = !this.openedDropdown
+			}
+		},
 		noWorkDistance(totalDistance, workDistance) {
 			return (totalDistance - workDistance).toFixed(2)
 		},
@@ -158,18 +213,43 @@ export default {
 		goto(path) {
 			return this.$router.push(path)
 		},
+		setStatus() {
+			setTimeout(() => {
+				this.getWaybills(this.filter)
+			})
+		},
+		setSerial(serial) {
+			this.filter.serial = serial
+			setTimeout(() => {
+				this.getWaybills(this.filter)
+			})
+		},
 		nextPage() {
 			if (!this.nextDisabled) {
 				this.currentPage += 1
-				this.getWaybills(this.currentPage)
+				this.getWaybills({page: this.currentPage})
 			}
 		},
 		prevPage() {
 			if (!this.prevDisabled) {
 				this.currentPage -= 1
-				this.getWaybills(this.currentPage)
+				this.getWaybills({page: this.currentPage})
+			}
+		},
+		close(e) {
+			if(!e.target.matches('.dropdown *')) {
+				this.openedDropdown = false
+				this.openedCarDropdown = false
+			}
+		},
+		toggleCarDropdown(e) {
+			if (!e.target.matches('.menu *')) {
+				this.openedCarDropdown = !this.openedCarDropdown
 			}
 		}
+	},
+	beforeMount() {
+		this.apiCarsFilter()
 	}
 }
 

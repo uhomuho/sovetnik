@@ -1,4 +1,16 @@
 {
-	"url": "http://tomcat.utyf.ru/advisor/",
-	"waybillsPerPage": 4
+	"Использование прокси": true,
+	"Адрес сервера": "http://tomcat.utyf.ru/advisor/",
+	"Количество путевых листов на странице": 4,
+	"Путевые листы за период": "waybill.json",
+	"Получение путевого листа на открытие": "waybill/open.json",
+	"Открытие путевого листа": "waybill/openJson",
+	"Поиск водителя": "drivers.json",
+	"Поиск автомобиля": "car.json",
+	"Получение последнего путевого листа": "waybill/last.json",
+	"Получение путевого листа на закрытие": "waybill/close.json",
+	"Закрытие путевого листа": "waybill/close",
+	"Отчёт по автографу": "report/track.json",
+	"Отчёт по путевому листу": "report/waybill.json",
+	"Список автомобилей для фильтра путевых листов": "car-groups.json"
 }
