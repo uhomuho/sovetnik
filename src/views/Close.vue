@@ -1,5 +1,5 @@
 <template lang="pug">
-div#main
+div#main(@click='close')
 	.container#close
 		.section
 			.level
@@ -36,7 +36,21 @@ div#main
 								.level-left
 									.level-item Гос. номер:
 								.level-right
-									.level-item {{ waybill.car.registrationPlate }}
+									.level-item
+										input(
+											v-model='waybill.car.registrationPlate'
+											@input='getSerial(waybill.car.registrationPlate)')
+										img.icon(
+											src="@/assets/icons/angle-4.svg")
+										
+										.get-serial(
+											v-if='results')
+											.columns.is-multiline.is-flex
+												.column.is-6(
+													v-for='result in results')
+													.item(
+														@click='getWb(result.serial, result.registrationPlate)')
+														| {{ result.registrationPlate }}
 
 					.level-right
 						.level-item
@@ -60,19 +74,27 @@ div#main
 							td
 							td
 							td 
-								span {{ waybill.fuelVolume.toLocaleString() }}
+								input(
+									v-model='waybill.fuelVolume')
 						tr
 							td.title Выезд
-							td 
-								span {{ waybill.mileageStart.toLocaleString() }}
-							td 
-								span(v-html='dateTimeStringStart')
+							td
+								input(
+									v-model='waybill.mileageStart')
+							td.date-start
+								span(
+									v-html='dateTimeStringStart'
+									@click='toggleCalStart()')
 								Calendar(
+									v-if='waybill.startFact'
+									:class='showCalStart ? "" : "is-hidden"'
 									:range='false'
 									:time='true'
+									:date='new Date(waybill.startFact)'
 									@select='setTimeStart')
 							td 
-								span {{ waybill.fuelStart }}
+								input(
+									v-model='waybill.fuelStart')
 						tr
 							td.title Возвращение
 							td 
@@ -81,10 +103,20 @@ div#main
 									@keyup='changeWidth'
 									v-model='milleageFinish'
 									placeholder='ЗАПОЛНИ!')
+							td.date-finish 
+								span(
+									v-html='dateTimeStringFinish'
+									@click='toggleCalEnd')
+								Calendar(
+									v-if='waybill.finishFact'
+									:class='showCalEnd ? "" : "is-hidden"'
+									:range='false'
+									:time='true'
+									:date='new Date(waybill.finishFact)'
+									@select='setTimeFinish')
 							td 
-								span(v-html='dateTimeStringFinish')
-							td 
-								span {{ waybill.fuelFinish }}	
+								input(
+									v-model='waybill.fuelFinish')
 						tr
 							td.title Общий пробег/расход
 							td 
@@ -127,7 +159,11 @@ export default {
 			isLoading: false,
 			wbId: this.id,
 			milleageFinish: null,
-			uts: ['']
+			uts: [''],
+			showResults: true,
+			results: null,
+			showCalStart: false,
+			showCalEnd: false
 		}
 	},
 	components: {
@@ -143,8 +179,10 @@ export default {
 			closeWaybill: 'getCloseWaybill'
 		}),
 		waybill() {
-			// console.log(this.closeWaybill.waybill)
-			return this.closeWaybill.waybill
+			if (this.closeWaybill.waybill) {
+				return this.closeWaybill.waybill
+			}
+			return null
 		},
 		totalFuel() {
 			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
@@ -154,7 +192,7 @@ export default {
 				let date = new Date(this.waybill.of),
 						day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
 						
-				return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
+				return `${day}.${monthName.num[date.getMonth()]}.${date.getFullYear()}`
 			} else {
 				return null
 			}
@@ -178,10 +216,39 @@ export default {
 	},
 	methods: {
 		...mapActions('waybills', {
-			getWaybill: 'apiCloseWaybill'
+			getWaybill: 'apiCloseWaybill',
+			getWbBySerial: 'apiLastOpenWb' 
 		}),
 		setTimeStart(date){
-			console.log(date)
+			this.waybill.startFact = date.date
+		},
+		setTimeFinish(date){
+			this.waybill.finishFact = date.date
+		},
+		toggleCalStart() {
+			this.showCalStart = !this.showCalStart
+		},
+		toggleCalEnd() {
+			this.showCalEnd = !this.showCalEnd
+		},
+		getSerial(key) {
+			if (key.length !== 0) {
+				api.getPlates(key)
+					.then(r => {
+						if (r.data.listCar.length == 0) {
+							this.results = false
+						} else {
+							this.results = r.data.listCar
+						}
+					})
+			} else {
+				this.results = false
+			}
+		},
+		getWb(serial, registrationPlate) {
+			this.getWbBySerial(serial)
+				.then(() => this.results = null)
+			this.waybill.car.registrationPlate = registrationPlate
 		},
 		closeWb() {
 			let formData = {}
@@ -192,6 +259,8 @@ export default {
 			formData.mileageFinish = this.milleageFinish
 			formData.mileageTotal = this.milleageFinish ? (this.milleageFinish - this.waybill.mileageStart > 0 ? (this.milleageFinish - this.waybill.mileageStart) : null ) : null
 			formData.fuelTotal = this.totalFuel
+			formData.startFact = this.waybill.startFact
+			formData.finishFact = this.waybill.finishFact
 			formData.status = "CLOSE"
 			formData.workText = this.uts
 
@@ -211,6 +280,17 @@ export default {
 				this.milleageFinish = this.milleageFinish.toLocaleString()
 			} else {
 				document.querySelector('.finish').style.width = `0px`
+			}
+		},
+		close(e) {
+			if(!e.target.matches('.dropdown *')) {
+				this.openedDropdown = false
+			}
+			if(!e.target.matches('.date-start *')) {
+				this.showCalStart = false
+			}
+			if(!e.target.matches('.date-finish *')) {
+				this.showCalEnd = false
 			}
 		}
 	},

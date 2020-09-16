@@ -28,6 +28,10 @@ export default {
 		let method = config["Получение последнего путевого листа"]
 		return api().get(`${method}?serial=${params.serial}&status=CLOSE`)
 	},
+	getLastOpenWb(keyword) {
+		let method = config["Получение последнего путевого листа"]
+		return api().get(`${method}?serial=${keyword}&status=OPEN`)
+	},
 	createWaybill(params) {
 		let method = config["Открытие путевого листа"]
 		return api().post(method, params)

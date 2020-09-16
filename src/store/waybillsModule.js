@@ -26,7 +26,7 @@ export default {
 		newListCar: newListCar ? JSON.parse(newListCar) : null,
 		loading: false,
 		status: ["CLOSE"],
-		carsFilter: null
+		carsFilter: null,
 	},
 	getters: {
 		getNewWaybill: state => state.newWaybill,
@@ -38,7 +38,7 @@ export default {
 		getPagesCount: state => state.pagesCount,
 		total: state => state.total,
 		getFilterType: state => state.filterType,
-		getCarsFilter: state => state.carsFilter
+		getCarsFilter: state => state.carsFilter,
 	},
 	mutations: {
 		waybills: (state, payload) => state.waybills = payload,
@@ -80,9 +80,7 @@ export default {
 			state.newListCar = payload
 			localStorage.setItem('newListCar', JSON.stringify(state.newListCar))
 		},
-		setCarsFilter(state, payload) {
-			state.carsFilter = payload.groups
-		}
+		setCarsFilter: (state, payload) => state.carsFilter = payload.groups,
 	},
 	actions: {
 		async getWaybills ({ commit, state }, filter) {
@@ -309,6 +307,20 @@ export default {
 				.catch(err => {
 					console.error(err)
 				})
+		},
+		async apiLastOpenWb({ commit }, serial) {
+			api.getLastOpenWb(serial)
+				.then(r => {
+					if (r.data.waybill !== null) {
+						commit('setCloseWaybill', r.data)
+						return
+					}
+					Snackbar.open({
+						message: 'Такого путевого листа нет!'
+					})
+					return
+				})
+				.catch(err => console.error(err))
 		},
 		setDates ({ commit, state }) {
 			let date = new Date()

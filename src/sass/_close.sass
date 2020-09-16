@@ -42,6 +42,43 @@
 				margin: 0
 				&>.level-left
 					margin-right: 2.7rem
+					.level-item
+						position: relative
+						img.icon
+							display: block
+							width: 1rem
+							height: auto
+							position: absolute
+							top: 0
+							bottom: 0
+							right: 3%
+							margin: auto 0
+						input
+							font-size: 1.125rem
+							font-weight: 400
+							color: $blue4
+							width: 9.25rem
+							border: none
+							border-bottom: 1px solid $grey2
+							box-shadow: none
+							&:focus
+								outline: none
+						
+						.get-serial
+							padding: 1rem 1.2rem
+							width: 16rem
+							background-color: #fff
+							border: 1px dashed $graphite2
+							box-shadow: 0px 8px 32px rgba(176, 191, 198, 0.5)
+							position: absolute
+							top: 100%
+							left: 0
+							z-index: 99
+							.item
+								font-size: .875rem
+								color: $graphite4
+								&+.item
+									margin-top: .5rem
 				&>.level-right
 					.level
 						.level-right
@@ -58,7 +95,7 @@
 				margin-top: 1rem
 			&>table
 				text-align: center
-				&>tbody
+				&>thead
 					&>tr
 						th
 							font-size: .875rem
@@ -66,19 +103,30 @@
 							color: $graphite2
 							border: none
 							padding: 1.5rem 0 1rem
-						&>td
-							font-size: 1.125rem
-							color: $blue4
-							border: none
-							&.title
-								font-weight: normal
-								text-align: left
-								color: $graphite4
+				&>tbody
+					td:not(.calendar-td)
+						font-size: 1.125rem
+						color: $blue4
+						border: none
+						&.title
+							font-weight: normal
+							text-align: left
+							color: $graphite4
 
-							&>span
-								text-align: center
-								border-bottom: 1px solid $grey2
-								min-width: 5.7rem
+						&>span
+							text-align: center
+							border-bottom: 1px solid $grey2
+							min-width: 5.7rem
+						&.date-start,
+						&.date-finish
+							position: relative
+							.calendar
+								width: unset
+								position: absolute
+								top: 100%
+								left: 0
+								z-index: 99
+
 				input
 					font-size: 1.125rem
 					text-align: center

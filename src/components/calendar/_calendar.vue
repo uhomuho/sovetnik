@@ -27,7 +27,7 @@
 						th вс
 				tbody
 					tr(v-for='week in weeks')
-						td(
+						td.calendar-td(
 							v-for='day in week'
 							@click='setDay(day.num)'
 							:class='compDay == day.unix ? "active" : null')
@@ -320,6 +320,7 @@ export default {
 		border: 1px dashed $graphite1
 		width: 12rem
 		background-color: #fff
+		box-shadow: 0px 8px 32px rgba(176, 191, 198, 0.5)
 		&.range
 			width: fit-content
 			background-color: transparent
