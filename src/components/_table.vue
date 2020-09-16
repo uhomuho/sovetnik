@@ -25,7 +25,8 @@
 															|{{ key }}
 													.field
 														.choose(
-															@click='setCar(null)')
+															@click='setCar(null)'
+															:class='choosenCar == null ? "selected" : null')
 															|Все
 												.tile.is-child.is-8
 													.title Гос. номер
@@ -199,12 +200,15 @@ export default {
 			'apiCarsFilter'
 		]),
 		setCar(name) {
+			this.filter.serial = name
 			this.choosenCar = name
 			if (name == null) {
-				this.getWaybills(this.filter)
-					.then(() => {
-						this.openedCarDropdown = false
-					})
+				setTimeout(() => {
+					this.getWaybills(this.filter)
+						.then(() => {
+							this.openedCarDropdown = false
+						})
+				})
 			}
 		},
 		toggleDropdown(e) {
