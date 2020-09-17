@@ -1,4 +1,5 @@
 module.exports = {
+	publicPath: '/advisor/',
 	css:  {
 		loaderOptions: {
 			sass: {

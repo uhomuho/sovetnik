@@ -255,7 +255,6 @@ export default {
 			let newWaybill = {
 				waybill: this.formData
 			}
-			console.log(this.formData)
 			this.setNewWaybill(newWaybill)
 			
 		},

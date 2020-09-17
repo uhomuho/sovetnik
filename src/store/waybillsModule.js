@@ -293,7 +293,16 @@ export default {
 		},
 		async apiCloseWaybill({ commit }, id) {
 			await api.getCloseWaybill(id)
-				.then(r => commit('setCloseWaybill', r.data))
+				.then(r => {
+					console.log(r.data.waybill.status)
+					if (r.data.waybill.status !== "CLOSE" && r.data.waybill.status !== "CHECK") {
+						commit('setCloseWaybill', r.data)
+					} else {
+						Snackbar.open({
+							message: 'Путевой лист уже закрыт или находится на проверке'
+						})
+					}
+				})
 				.catch(err => {
 					console.error(err)
 					commit('setCloseWaybill', null)

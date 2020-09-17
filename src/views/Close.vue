@@ -149,6 +149,7 @@ import monthName from '@/month'
 import { mapGetters, mapActions } from 'vuex'
 import Calendar from '@/components/calendar/_calendar.vue'
 import api from '@/api/apiActions'
+import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
 export default {
 	name: 'CloseWaybill',
@@ -252,20 +253,49 @@ export default {
 		},
 		closeWb() {
 			let formData = {}
-			formData.id = this.wbId
+			formData.id = this.wbId || this.waybill.id
 			formData.of = this.waybill.of
 			formData.fuelVolume = this.waybill.fuelVolume
 			formData.mileageStart = this.waybill.mileageStart
 			formData.mileageFinish = this.milleageFinish
-			formData.mileageTotal = this.milleageFinish ? (this.milleageFinish - this.waybill.mileageStart > 0 ? (this.milleageFinish - this.waybill.mileageStart) : null ) : null
+			formData.mileageTotal = this.milleageFinish - this.waybill.mileageStart
 			formData.fuelTotal = this.totalFuel
 			formData.startFact = this.waybill.startFact
 			formData.finishFact = this.waybill.finishFact
 			formData.status = "CLOSE"
 			formData.workText = this.uts
 
-			api.closeWaybill(formData)
-				.then(r => console.log(r))
+			if (formData.mileageTotal < 0) {
+				return Snackbar.open({
+					message: 'Разница спидометра старт/финиш должна быть положительной!'
+				})
+			}
+
+			for (var data in formData) {
+				if (!formData[data]) {
+					return Snackbar.open({
+						message: 'Заполните все поля!'
+					})
+				}
+			}
+			for (var task in formData.workText) {
+				if (!formData.workText[task]) {
+					return Snackbar.open({
+						message: 'Заполните все поля!'
+					})
+				}
+			}
+
+			this.waybill.mileageTotal = formData.mileageTotal
+
+			api.closeWaybill(this.waybill)
+				.then(() => {
+					Snackbar.open({
+						message: 'Путевой лист успешно закрыт!'
+					})
+					this.$router.push('/waybills')
+				})
+				.catch(err => console.error(err))
 		},
 		addUts() {
 			this.uts.push('')

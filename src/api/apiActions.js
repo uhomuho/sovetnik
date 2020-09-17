@@ -38,7 +38,7 @@ export default {
 	},
 	closeWaybill(params) {
 		let method = config["Закрытие путевого листа"]
-		return api().post(method, params)
+		return api().post(`${method}`, params)
 	},
 	getCloseWaybill(id) {
 		let method = config["Получение путевого листа на закрытие"]
