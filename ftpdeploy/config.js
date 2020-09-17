@@ -1,7 +1,7 @@
 module.exports = {
   localBasePath:"/",
-  remoteBasePath: "/",
+  remoteBasePath: "/advisor/client",
   sync: [
-    { src: "/dist", dest: "/advisor/" }
+    { src: "/dist", dest: "/" }
   ]
 };

@@ -16,11 +16,20 @@ div#main(@click='close')
 							.level-left
 								.level-item
 									|№
-									input(
-										v-model="wbId"
-										placeholder="ID"
-										@input='getWaybill(wbId)'
-										type="number")
+									form(@submit.prevent='getWaybill(wbId).then(() => hint = false)')
+										b-tooltip(
+											:active='hint'
+											label="Нажмите Enter"
+											position="is-bottom"
+											type="is-white"
+											size="is-small"
+											multilined
+											always)
+											input(
+												v-model="wbId"
+												placeholder="ID"
+												type="number"
+												@input='showHint')
 							.level-right
 								.level-item(v-if='closeWaybill')
 									|от
@@ -123,7 +132,7 @@ div#main(@click='close')
 								span {{ milleageFinish ? (milleageFinish - waybill.mileageStart > 0 ? (milleageFinish - waybill.mileageStart).toLocaleString() : null ) : null }}
 							td
 							td 
-								span {{ totalFuel }}
+								span {{ totalFuel ? totalFuel : "" }}
 
 				hr
 
@@ -164,7 +173,8 @@ export default {
 			showResults: true,
 			results: null,
 			showCalStart: false,
-			showCalEnd: false
+			showCalEnd: false,
+			hint: false
 		}
 	},
 	components: {
@@ -180,7 +190,7 @@ export default {
 			closeWaybill: 'getCloseWaybill'
 		}),
 		waybill() {
-			if (this.closeWaybill.waybill) {
+			if (this.closeWaybill && this.closeWaybill.waybill) {
 				return this.closeWaybill.waybill
 			}
 			return null
@@ -216,6 +226,12 @@ export default {
 		}
 	},
 	methods: {
+		showHint() {
+			this.hint = false
+			setTimeout(() => {
+				this.hint = true
+			}, 5000)
+		},
 		...mapActions('waybills', {
 			getWaybill: 'apiCloseWaybill',
 			getWbBySerial: 'apiLastOpenWb' 
@@ -329,6 +345,9 @@ export default {
 			this.isLoading = true
 			this.getWaybill(this.id)
 				.then(() => this.isLoading = false)
+		}
+		if (this.waybill && this.waybill.id) {
+			this.wbId = this.waybill.id
 		}
 	}
 }

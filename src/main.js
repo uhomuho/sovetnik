@@ -16,6 +16,16 @@ import store from './store'
 // Main Component
 import App from './App.vue'
 
+// Config file
+import config from '../public/config'
+
+Vue.prototype.$userConfig = config
+
+// Set global variables from user config
+for (var glob in config.global) {
+	Vue.prototype[`$${glob}`] = config.global[glob]
+}
+
 Vue.config.productionTip = false
 
 new Vue({

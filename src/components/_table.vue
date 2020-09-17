@@ -134,7 +134,6 @@
 <script>
 import monthName from '@/month'
 import { mapMutations, mapGetters, mapActions, mapState } from 'vuex'
-import config from '../../public/config.json'
 
 export default {
 	name: 'Table',
@@ -179,7 +178,7 @@ export default {
 			return this.waybills == {} ? true : false
 		},
 		waybillsOnPage() {
-			return (this.currentPage * config["Количество путевых листов на странице"]) > this.waybills.size ? this.waybills.count : (this.currentPage * config["Количество путевых листов на странице"])
+			return (this.currentPage * this.waybills.size) > this.waybills.count ? this.waybills.count : (this.currentPage * this.waybills.size)
 		},
 		compPrev() {
 			return true
@@ -188,7 +187,7 @@ export default {
 			return this.currentPage == 1 ? true : false
 		},
 		nextDisabled() {
-			return (this.currentPage * config["Количество путевых листов на странице"]) < this.waybills.count ? false : true
+			return (this.currentPage * this.waybills.size) < this.waybills.count ? false : true
 		}
 	},
 	methods: {
@@ -225,7 +224,7 @@ export default {
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]} ${hours}:${minutes}`
+			return `${day}.${monthName.num[date.getMonth()]} ${hours}:${minutes}`
 		},
 		goto(path) {
 			return this.$router.push(path)

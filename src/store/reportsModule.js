@@ -19,7 +19,7 @@ export default {
 		dateTo: dateTo ? dateTo : new Date(2020, 8, 20),
 		dateFrom: dateFrom ? dateFrom : new Date(),
 		waybillReport: null,
-		plateSearchKey: null
+		// plateSearchKey: null
 	},
 	getters: {
 		getWaybillsReports: state => state.waybillsReports,
@@ -54,15 +54,16 @@ export default {
 		setWaybillReport(state, payload) {
 			state.waybillReport = payload
 		},
-		setPlateSearchKey(state, payload) {
-			state.plateSearchKey = payload
-		}
+		// setPlateSearchKey(state, payload) {
+		// 	state.plateSearchKey = payload
+		// }
 	},
 	actions: {
 		apiWaybillReport({ commit }, params) {
 			api.getWaybillReport(params)
 				.then(r => {
-					commit('setPlateSearchKey', r.data.waybill.car.registrationPlate)
+					console.log(r)
+					// commit('setPlateSearchKey', r.data.waybill.car.registrationPlate)
 					commit('setWaybillReport', r.data.waybill)
 				})
 				.catch(err => {

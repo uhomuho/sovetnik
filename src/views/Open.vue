@@ -202,7 +202,7 @@ export default {
 			let date = new Date(this.waybill.of),
 					day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
 					
-			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
+			return `${day}.${monthName.num[date.getMonth()]}.${date.getFullYear()}`
 		},
 		fuelStart() {
 			return this.lastWb.fuelStart
@@ -216,7 +216,7 @@ export default {
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()},&nbsp;${hours}:${minutes}`
+			return `${day}.${monthName.num[date.getMonth()]}.${date.getFullYear()},&nbsp;${hours}:${minutes}`
 		},
 		dateTimeStringFinish() {
 			let date = new Date(this.waybill.finishPlan),
@@ -224,7 +224,7 @@ export default {
 					hours = (`${date.getHours()}`.length == 1) ? (`0${date.getHours()}`) : date.getHours(),
 					minutes = (`${date.getMinutes()}`.length == 1) ? (`0${date.getMinutes()}`) : date.getMinutes()
 
-			return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()},&nbsp;${hours}:${minutes}`
+			return `${day}.${monthName.num[date.getMonth()]}.${date.getFullYear()},&nbsp;${hours}:${minutes}`
 		},
 		formData() {
 			return {

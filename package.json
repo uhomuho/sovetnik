@@ -6,10 +6,10 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "nodemon -L server.js",
-    "git": "git add . && git commit -m \"Frontend update\" && git push",
     "deploy_ftp": "vue-cli-service ftpdeploy --genHist --diffFileOnly --ftpCfgPath /ftpdeploy/ --ftpHistPath /ftpdeploy/",
-    "production": "npm run build && npm run deploy_ftp"
+    "git": "git add . && git commit -m \"Frontend update\" && git push",
+    "production": "npm run build && npm run deploy_ftp",
+    "start": "nodemon -L server.js"
   },
   "dependencies": {
     "axios": "^0.20.0",
@@ -38,6 +38,7 @@
     "sass": "^1.26.10",
     "sass-loader": "^10.0.0",
     "svgo-loader": "^2.2.1",
+    "vue-cli-plugin-ftp-deploy": "~0.1.14",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {

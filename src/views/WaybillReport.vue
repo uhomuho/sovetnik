@@ -16,15 +16,24 @@
 								.level-left
 									.level-item
 										|№
-										input(
-											v-model="wbId"
-											placeholder="ID"
-											type="number"
-											@input='getWaybill(wbId)')
+										form(@submit.prevent='getWaybill(wbId).then(() => hint = false)')
+											b-tooltip(
+												:active='hint'
+												label="Нажмите Enter"
+												position="is-bottom"
+												type="is-white"
+												size="is-small"
+												multilined
+												always)
+											input(
+												v-model="wbId"
+												placeholder="ID"
+												type="number"
+												@input='showHint')
 								.level-right
 									.level-item
 										|от
-										span {{ dateStringOf ? dateStringOf : "XX/XX/XXXX" }}
+										span {{ dateStringOf ? dateStringOf : "XX.XX.XXXX" }}
 				hr
 
 				.wrapper(v-if='waybill')
@@ -32,13 +41,11 @@
 						p Гос. номер:
 						input.input( 
 							type="text"
-							v-model='registrationPlate')
+							v-model='waybill.car.registrationPlate')
 						.search.is-hidden
 
 					.item
-						p Водитель:
-						.input
-						.search.is-hidden
+						p Водитель: {{ waybill.driver.name }}
 
 				hr(v-if='waybill')
 
@@ -121,7 +128,8 @@ export default {
 	data() {
 		return {
 			wbId: this.id ? this.id : null,
-			registrationPlate: this.waybill ? this.waybill.car.registrationPlate : null
+			registrationPlate: this.waybill ? this.waybill.car.registrationPlate : null,
+			hint: false
 		}
 	},
 	components: {},
@@ -138,7 +146,7 @@ export default {
 			if (this.waybill) {
 				let date = new Date(this.waybill.of),
 						day = (`${date.getDate()}`.length == 1) ? (`0${date.getDate()}`) : date.getDate()
-				return `${day}/${monthName.num[date.getMonth()]}/${date.getFullYear()}`
+				return `${day}.${monthName.num[date.getMonth()]}.${date.getFullYear()}`
 			} else {
 				return null
 			}
@@ -148,9 +156,12 @@ export default {
 		...mapActions('reports', {
 			getWaybill: 'apiWaybillReport'
 		}),
-		// getWaybillData() {
-		// 	this.getWaybill(this.wbId)
-		// }
+		showHint() {
+			this.hint = false
+			setTimeout(() => {
+				this.hint = true
+			}, 5000)
+		}
 	},
 	mounted() {
 		if (this.id) {
