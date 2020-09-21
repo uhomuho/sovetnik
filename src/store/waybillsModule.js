@@ -1,6 +1,18 @@
 import monthName from '@/month'
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
+import config from '../../public/config.js'
+
+function setLocalDataNull(data) {
+	localStorage.setItem(data, null)
+}
+setLocalDataNull('dateFrom')
+setLocalDataNull('dateTo')
+setLocalDataNull('filterType')
+setLocalDataNull('newWaybill')
+setLocalDataNull('newListDrivers')
+setLocalDataNull('newListCar')
+setLocalDataNull('waybills')
 
 let dateFrom 				= localStorage.getItem('dateFrom'),
 		dateTo					= localStorage.getItem('dateTo'),
@@ -19,7 +31,7 @@ export default {
 		dateFrom: dateFrom ? new Date(dateFrom) : null,
 		dateTo: dateTo ? new Date(dateTo) : null,
 		total: null,
-		filterType: filterType ? filterType : "range",
+		filterType: filterType && filterType !== 'null' ? filterType : "range",
 		closeWaybill: null,
 		newWaybill: newWaybill ? JSON.parse(newWaybill) : null,
 		newListDrivers: newListDrivers ? JSON.parse(newListDrivers) : null,
@@ -45,12 +57,12 @@ export default {
 		waybillsSort: (state, payload) => state.waybillsSort = payload,
 		setCloseWaybill: (state, payload) => state.closeWaybill = payload,
 		dateFrom (state, payload) {
-			state.dateFrom = payload.date
-			localStorage.setItem('dateFrom', payload.date)
+			state.dateFrom = new Date(payload)
+			localStorage.setItem('dateFrom', payload)
 		},
 		dateTo (state, payload) {
-			state.dateTo = payload.date
-			localStorage.setItem('dateTo', payload.date)
+			state.dateTo = new Date(payload)
+			localStorage.setItem('dateTo', payload)
 		},
 		setFilterType (state, payload) {
 			state.filterType = payload
@@ -88,17 +100,18 @@ export default {
 			let curYear 		= new Date().getFullYear(),
 					curMonth 		= monthName.num[new Date().getMonth()],
 					curDay 			= new Date().getDate(),
-					timezone 		= new Date().getTimezoneOffset()/60,
+					timezone 		= config.global.timezone,
 					page 				= filter && filter.page ? filter.page : null,
 					params,
 					curWeekDay,
 					weekStart,
 					weekEnd
+			console.log(state.filterType)
 
 			if ( `${timezone}`.includes('-') ) {
-				timezone = `${timezone}`.replace('-', '%2B0') + ':00'
+				timezone = `${timezone}`.replace('-', '%2D')
 			} else {
-				timezone = `%2D0${timezone}:00`
+				timezone = `${timezone}`.replace('+', '%2B')
 			}
 
 			switch(state.filterType) {
@@ -311,13 +324,20 @@ export default {
 					Snackbar.open({
 						message: 'Путевой лист находится на проверке, уже закрыт или не существует'
 					})
-					commit('setCloseWaybill', null)
+					// commit('setCloseWaybill', null)
 				})
 		},
 		async apiCarsFilter({ commit }) {
 			api.getCarsFilter()
 				.then(r => {
-					commit('setCarsFilter', r.data)
+					let groups = r.data
+					for (let group in groups.groups) {
+						for (let plate in groups.groups[group]) {
+							let registrationPlate = groups.groups[group][plate].registrationPlate
+							groups.groups[group][plate].registrationPlate = registrationPlate.toLowerCase()
+						}
+					}
+					commit('setCarsFilter', groups)
 				})
 				.catch(err => {
 					console.error(err)
@@ -337,18 +357,13 @@ export default {
 				})
 				.catch(err => console.error(err))
 		},
-		setDates ({ commit, state }) {
+		setDates ({ commit }) {
 			let date = new Date()
 
-			if (state.dateFrom == null) {
-				let from = new Date(date.setMonth(date.getMonth() - 3))
-				commit('dateFrom', from)
-			}
-
-			if (state.dateTo == null) {
-				let to = new Date(date.setMonth(date.getMonth() + 1))
-				commit('dateTo', to)
-			}
+			let from = new Date(date.setMonth(date.getMonth() - 3))
+			commit('dateFrom', from)
+			let to = new Date(date.setMonth(date.getMonth() + 4))
+			commit('dateTo', to)
 		}
 	}
 }

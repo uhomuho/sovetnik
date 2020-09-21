@@ -16,6 +16,7 @@
 
 <script>
 import Sidebar from '@/components/_sidebar'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'App',
@@ -37,11 +38,36 @@ export default {
 			}
 		}
 	},
+	computed: {
+		...mapState('waybills', {
+			dateFrom: state => state.dateFrom,
+			dateTo: state => state.dateTo
+		}),
+		...mapState('reports', {
+			repDateFrom: state => state.dateFrom,
+			repDateTo: state => state.dateTo
+		})
+	},
+	methods: {
+		...mapActions('waybills', [
+			'setDates'
+		]),
+		...mapActions('reports', {
+			setRepDates: 'setDates'
+		})
+	},
 	beforeMount() {
 		const timezoneCheck = /^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$/
 		if (!this.$timezone.match(timezoneCheck)) {
 			this.timezoneError = true
 			this.errorType = "timezone"
+		}
+
+		if (!this.dateFrom || !this.dateTo) {
+			this.setDates()
+		}
+		if (!this.repDateFrom || !this.repDateTo) {
+			this.setRepDates()
 		}
 	}
 }

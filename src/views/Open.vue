@@ -92,6 +92,7 @@ div
 
 								Calendar( 
 									@select='selectStart'
+									:time='true'
 									:class='startTime ? null : "hide"',
 									:dateFinish='unixDateFinish ? unixDateFinish : null')
 					.level
@@ -110,6 +111,7 @@ div
 
 								Calendar( 
 									@select='selectFinish'
+									:time='true'
 									:class='finishTime ? null : "hide"',
 									:dateStart='unixDateStart ? unixDateStart : null')
 					hr
@@ -121,9 +123,9 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='waybill.mileageStart'
+									v-model='lastWb && lastWb.waybill !== null ? lastWb.waybill.mileageFinish : waybill.mileageStart'
 									placeholder="Спидометр в начале смены")
-								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
+								span.hint.is-danger(v-if='!lastWb || lastWb.waybill == null') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
 					
 					.level
@@ -133,15 +135,25 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='waybill.fuelStart'
+									v-model='lastWb && lastWb.waybill !== null ? lastWb.waybill.fuelFinish : waybill.fuelStart'
 									placeholder="Топливо в начале смены")
-								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
+								span.hint.is-danger(v-if='!lastWb || lastWb.waybill == null') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
 
 				.tile
-					img(src="/img/waybillexample.svg")
+					Blank(
+						:id='waybill.id'
+						:dateOf='waybill.of'
+						:model='waybill.car && waybill.car.model ? waybill.car.model : null'
+						:registrationPlate='waybill.car && waybill.car.registrationPlate ? waybill.car.registrationPlate : null'
+						:serial='waybill.serial'
+						:driver='driver'
+						:task='waybill.workText'
+						:mileageLast='lastWb && lastWb.waybill !== null ? lastWb.waybill.mileageFinish : waybill.mileageStart'
+						:fuelLast='lastWb && lastWb.waybill !== null ? lastWb.waybill.fuelFinish : waybill.fuelStart',
+						:dateStart='waybill.startPlan'
+						:dateFinish='waybill.finishPlan')
 			hr
-
 			.task
 				span.title Задание водителю:
 				input(
@@ -163,6 +175,7 @@ div
 <script>
 import monthName from '@/month'
 import Calendar from '@/components/calendar/_calendar'
+import Blank from '@/components/canvas/_wb-blank'
 import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
@@ -170,7 +183,8 @@ import { SnackbarProgrammatic as Snackbar } from 'buefy'
 export default {
 	name: 'CreateWaybill',
 	components: {
-		Calendar
+		Calendar,
+		Blank
 	},
 	data() {
 		return {
@@ -181,7 +195,8 @@ export default {
 			registrationPlate: null,
 			carSerial: null,
 			driver: null,
-			lastWb: null
+			lastWb: null,
+			mode: process.env.NODE_ENV
 		}
 	},
 	computed: {
@@ -231,7 +246,7 @@ export default {
 				id: this.waybill.id ? this.waybill.id : null,
 				of: this.waybill.of ? this.waybill.of : null,
 				car: this.waybill.car ? this.waybill.car : null,
-				serial: this.waybill.serial ? this.waybill.serial : null,
+				serial: this.waybill.car.serial ? this.waybill.car.serial : null,
 				workText: this.waybill.workText ? this.waybill.workText : null,
 				driverId: this.waybill.driverId ? this.waybill.driverId : null,
 				startPlan: this.waybill.startPlan ? this.waybill.startPlan : null,
@@ -277,7 +292,7 @@ export default {
 				.then(r => this.setListCars(r.data.listCar))
 		},
 		async getLastWb() {
-			await api.getLastWb({serial: this.carSerial})
+			await api.getLastWb({serial: this.waybill.serial})
 				.then(r => this.lastWb = r.data)
 		},
 		selectStart(data) {
@@ -338,10 +353,12 @@ export default {
 	},
 	beforeMount() {
 		if (!this.waybill) {
-			console.log(this.waybill)
 			this.isLoading = true
 			this.getNewWaybill()
 				.then(() => this.isLoading = false)
+		}
+		if (this.registrationPlate) {
+			this.getLastWb()
 		}
 	}
 }

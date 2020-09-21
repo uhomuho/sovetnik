@@ -1,5 +1,5 @@
 <template lang="pug">
-	div(@click='close')
+	div( @click='close' )
 		.section
 			.container
 				.level
@@ -11,48 +11,50 @@
 								|путевым листам
 					.level-right
 						.level-item
-							//- table
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("year"), waybillsSort()'
-							//- 			:class='filterType == "year" ? "active" : null') весь год
-							//- 		td(
-							//- 			@click='setFilter("yest"), waybillsSort()'
-							//- 			:class='filterType == "yest" ? "active" : null') вчера
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("month"), waybillsSort()'
-							//- 			:class='filterType == "month" ? "active" : null') месяц
-							//- 		td(
-							//- 			@click='setFilter("today"), waybillsSort()'
-							//- 			:class='filterType == "today" ? "active" : null') сегодня
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("week"), waybillsSort()'
-							//- 			:class='filterType == "week" ? "active" : null') неделя
-							//- 		td(
-							//- 			@click='setFilter("range"), waybillsSort()'
-							//- 			:class='filterType == "range" ? "active" : null') период
-							.level-item
-								.wrapper.from(
-									@click='openFrom')
-									p {{ stringFrom }}
-									Calendar(
-										@select='setDateFrom'
-										v-if='showFrom'
-										:time='false')
-								.wrapper.to(
-									@click='openTo')
-									p {{ stringTo }}
-									Calendar(
-										@select='setDateTo'
-										v-if='showTo'
-										:time='false')
+							table
+								tr
+									td(
+										@click='setFilter("year"), getWaybills(0)'
+										:class='filterType == "year" ? "active" : null') весь год
+									td(
+										@click='setFilter("yest"), getWaybills(0)'
+										:class='filterType == "yest" ? "active" : null') вчера
+								tr
+									td(
+										@click='setFilter("month"), getWaybills(0)'
+										:class='filterType == "month" ? "active" : null') месяц
+									td(
+										@click='setFilter("today"), getWaybills(0)'
+										:class='filterType == "today" ? "active" : null') сегодня
+								tr
+									td(
+										@click='setFilter("week"), getWaybills(0)'
+										:class='filterType == "week" ? "active" : null') неделя
+									td(
+										@click='setFilter("range"), getWaybills(0)'
+										:class='filterType == "range" ? "active" : null') период
+						.level-item
+							.wrapper.from(
+								@click='openFrom')
+								p {{ stringFrom }}
+								Calendar(
+									:class='showFrom ? null : "is-hidden"'
+									@select='setFrom'
+									:time='false',
+									:date='dateFrom')
+							.wrapper.to(
+								@click='openTo')
+								p {{ stringTo }}
+								Calendar(
+									:class='showTo ? null : "is-hidden"'
+									@select='setTo'
+									:time='false',
+									:date='dateTo')
 
 				hr
 				Table(
-					:waybills='filteredWaybillsReports ? filteredWaybillsReports : waybillsReports'
-					:carsList='carsList')
+					v-if='waybills'
+					:waybills='waybills.listWaybill')
 </template>
 
 <script>
@@ -69,38 +71,53 @@ export default {
 	},
 	data() {
 		return {
-			date: new Date(),
+			isLoading: false,
 			showTo: false,
 			showFrom: false
 		}
 	},
 	computed: {
-		...mapGetters('reports', {
-			waybillsReports: 'getWaybillsReports',
-			filteredWaybillsReports: 'getFilteredWaybillsReports'
+		...mapGetters('waybills', {
+			waybills: 'waybills',
+			total: 'total',
+			filterType: 'getFilterType'
 		}),
-		...mapState('reports', {
+		...mapState('waybills', {
 			dateTo: state => state.dateTo,
-			dateFrom: state => state.dateFrom,
-			carsList: state => state.carsList
+			dateFrom: state => state.dateFrom
 		}),
 		stringFrom() {
-			let date = new Date(this.dateFrom)
-			return `С ${date.getDate()} ${monthName.string[date.getMonth()]} ${date.getFullYear()}`
+			return `С ${this.dateFrom.getDate()} ${monthName.string[this.dateFrom.getMonth()]} ${this.dateFrom.getFullYear()}`
 		},
 		stringTo() {
-			let date = new Date(this.dateTo)
-			return `по ${date.getDate()} ${monthName.string[date.getMonth()]} ${date.getFullYear()}`
+			return `по ${this.dateTo.getDate()} ${monthName.string[this.dateTo.getMonth()]} ${this.dateTo.getFullYear()}`
 		}
 	},
 	methods: {
-		...mapActions('reports', {
-			getWaybillsReports: 'apiWaybillsReport'
+		...mapActions('waybills', [
+			'waybillsSort',
+			'getWaybills',
+			'setDates'
+		]),
+		...mapMutations('waybills', {
+			setDateTo: 'dateTo',
+			setDateFrom: 'dateFrom',
+			setFilter: 'setFilterType'
 		}),
-		...mapMutations('reports', {
-			setDateTo: 'setDateTo',
-			setDateFrom: 'setDateFrom'
-		}),
+		setTo(e) {
+			this.setDateTo(e)
+
+			setTimeout(() => {
+				this.getWaybills()
+			}, 50)
+		},
+		setFrom(e) {
+			this.setDateFrom(e)
+
+			setTimeout(() => {
+				this.getWaybills()
+			}, 50)
+		},
 		openTo(e) {
 			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
 				this.showTo = !this.showTo
@@ -120,12 +137,21 @@ export default {
 					this.showFrom = false
 				}
 			}
-		},
+		}
+	},
+	mounted() {
+
+		if (!this.waybillsSortData) {
+			this.isLoading = true
+			// this.getWaybills()
+			// 	.then(() => this.isLoading = false)
+		}
 	},
 	beforeMount() {
-		this.getWaybillsReports()
+		this.setDates()
 	}
 }
+
 </script>
 
 <style lang="sass" scoped>

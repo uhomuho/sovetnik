@@ -16,9 +16,12 @@ import store from './store'
 // Main Component
 import App from './App.vue'
 
+// Common libs
+import VueKonva from 'vue-konva'
+Vue.use(VueKonva)
+
 // Config file
 import config from '../public/config'
-
 Vue.prototype.$userConfig = config
 
 // Set global variables from user config

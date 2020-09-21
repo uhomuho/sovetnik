@@ -10,8 +10,8 @@
 				v-for='(item, key) in route.children'
 				:key='key'
 				v-if='!item.hidden'
-				:to='`${route.path}/${item.path}`')
-					img( :src='`/icons/${item.menuIcon}.svg`' )
+				:to='item.path ? `${route.path}/${item.path}` : route.path')
+					img( :src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/${item.menuIcon}.svg`' )
 					|{{item.menuName}}
 		
 		.items(
@@ -23,8 +23,8 @@
 				v-for='(item, key) in route.children'
 				:key='key'
 				v-if='!item.hidden'
-				:to='`${route.path}/${item.path}`')
-					img( :src='`/icons/${item.menuIcon}.svg`' )
+				:to='item.path ? `${route.path}/${item.path}` : route.path')
+					img( :src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/${item.menuIcon}.svg`' )
 					|{{item.menuName}}
 </template>
 
@@ -32,7 +32,12 @@
 
 export default {
 	name: 'Sidebar',
-	props: ['routes']
+	props: ['routes'],
+	data() {
+		return {
+			mode: process.env.NODE_ENV
+		}
+	}
 }
 
 </script>

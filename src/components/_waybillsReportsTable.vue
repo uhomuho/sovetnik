@@ -1,29 +1,42 @@
 <template lang="pug">
-	div#reports_table(@click='close')
+	div#reports_table(
+		@click='close')
 			table.table
 				thead
 					tr
 						th.id №
 						th.car 
-							b-dropdown
-								.wrapper(
-									slot="trigger"
-									role="button")
-									p Машины
-									img.icon( src="@/assets/icons/angle.svg" )
-								
-								b-dropdown-item(
-									aria-role="list-item"
-									@click='setCar("ALL")'
-									:class='filter.car == "ALL" ? "is-active" : null')
-									|Все
-								b-dropdown-item(
-									aria-role="list-item"
-									v-for="car in carsList"
-									:key='car'
-									@click='setCar(car)'
-									:class='car == filter.car ? "is-active" : null')
-									|{{ car }}
+							.dropdown(
+								@click='toggleCarDropdown'
+								:class='openedCarDropdown ? "is-active" : null')
+								p Машина
+								img.icon( src="@/assets/icons/angle.svg" )
+
+								.menu(v-if='openedCarDropdown && carFilter')
+									.tile.is-ancestor
+										.tile.is-parent
+											.tile.is-child
+												.title Тип ТС
+												.field(v-for='(car, key) in carFilter')
+													.choose(
+														@mouseover='setCar(key)'
+														:class='key == choosenCar ? "selected" : null')
+														|{{ key }}
+												.field
+													.choose(
+														@click='setCar(null)'
+														:class='choosenCar == null ? "selected" : null')
+														|Все
+											.tile.is-child.is-8
+												.title Гос. номер
+												.columns.is-flex.is-multiline
+													.column.is-4(
+															v-if='choosenCar'
+															v-for='car in carFilter[choosenCar]')
+														.column-container.num(
+															@click='setSerial(car.serial)'
+															:class='filter.serial == car.serial ? "selected" : null')
+															|{{car.registrationPlate}}
 						th.fuel.is-paddingless Расход ГСМ, л
 							table
 								tr
@@ -49,30 +62,32 @@
 												:id='status.id'
 												:value='status.name'
 												v-model='filter.status',
-												@input='choose')
+												@input='setStatus')
 											label.checkbox(:for='status.id')
 												|{{ status.text }}
-				tbody(v-if='waybills.length !== 0')
+				tbody(
+					v-if='waybills && waybills.length !== 0')
 					tr(
 						v-for='waybill in waybills'
-						:class='waybill.status.class')
+						:class='waybill.status.class'
+						@click='waybill.status.name == "CLOSE" ? to(waybill.id) : null')
 						td.id(
 							:class="waybill.status.class") {{ waybill.id }}
 						td.car.is-paddingless
 							table
 								tr
-									td {{ waybill.car.name }}
+									td {{ waybill.car.model }}
 									td {{ waybill.car.registrationPlate }}
 						td.fuel.is-paddingless
 							table
 								tr
-									td {{ waybill.fuelWaybill }}
-									td {{ waybill.fuelAutograph }}
+									td {{ waybillFuelDown(waybill) ? waybillFuelDown(waybill) : "&nbsp;" }}
+									td {{ waybill.trackFuelDown ? waybill.trackFuelDown : "&nbsp;" }}
 						td.mileage.is-paddingless
 							table
 								tr
-									td {{ waybill.mileageWaybill }}
-									td {{ waybill.mileageAutograph }}
+									td {{ waybill.mileageTotal }}
+									td {{ waybill.trackMileage }}
 						td.status(
 							:class="waybill.status.class") {{ waybill.status.text }}
 
@@ -93,19 +108,20 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
 
 export default {
 	name: 'waybillsReportsTable',
 	data() {
 		return {
 			openedDropdown: false,
+			openedCarDropdown: false,
+			choosenCar: null,
 			filter: {
 				status: ["CLOSE"],
-				car: "ALL"
+				serial: null
 			},
 			statusFilter: "CLOSE",
-			carFilter: "ALL",
 			statusList: [
 				{
 					name: "CLOSE",
@@ -125,21 +141,49 @@ export default {
 			]
 		}
 	},
-	props: ['waybills', 'carsList'],
+	props: ['waybills'],
 	computed: {
+		...mapGetters('waybills',{
+			carFilter: 'getCarsFilter'
+		})
 	},
 	methods: {
-		...mapActions('reports', {
-			filterReports: 'filterReports'
+		...mapMutations('waybills', [
+			'setCarFilter'
+		]),
+		...mapActions('waybills', {
+			getWaybills: 'getWaybills',
+			apiCarsFilter: 'apiCarsFilter'
 		}),
-		choose() {
-			setTimeout(()=>{
-				this.filterReports(this.filter)
-			}, 50)
+		to(id) {
+			this.$router.push(`/reports/waybill/${id}`)
 		},
-		setCar(val) {
-			this.filter.car = val
-			this.filterReports(this.filter)
+		waybillFuelDown(waybill) {
+			return parseInt(waybill.fuelStart) + parseInt(waybill.fuelVolume) - parseInt(waybill.fuelFinish)
+		},
+		setCar(name) {
+			this.filter.serial = name
+			this.choosenCar = name
+			if (name == null) {
+				setTimeout(() => {
+					this.getWaybills(this.filter)
+						.then(() => {
+							this.openedCarDropdown = false
+						})
+				})
+			}
+		},
+		setStatus() {
+			setTimeout(() => {
+				this.getWaybills(this.filter)
+			})
+		},
+		setSerial(serial) {
+			this.filter.serial = serial
+			setTimeout(() => {
+				this.getWaybills(this.filter)
+			})
+			this.openedCarDropdown = false
 		},
 		openDropdown(e) {
 			if (!e.target.matches('.menu *')) {
@@ -149,11 +193,18 @@ export default {
 		close(e) {
 			if(!e.target.matches('.dropdown *')) {
 				this.openedDropdown = false
+				this.openedCarDropdown = false
+			}
+		},
+		toggleCarDropdown(e) {
+			if (!e.target.matches('.menu *')) {
+				this.openedCarDropdown = !this.openedCarDropdown
 			}
 		},
 	},
 	beforeMount() {
-		this.filterReports(this.filter)
+		this.apiCarsFilter()
+		this.getWaybills(this.filter)
 	}
 }
 </script>

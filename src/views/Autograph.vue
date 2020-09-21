@@ -11,28 +11,28 @@
 								|автографу
 					.level-right
 						.level-item
-							//- table
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("year"), waybillsSort()'
-							//- 			:class='filterType == "year" ? "active" : null') весь год
-							//- 		td(
-							//- 			@click='setFilter("yest"), waybillsSort()'
-							//- 			:class='filterType == "yest" ? "active" : null') вчера
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("month"), waybillsSort()'
-							//- 			:class='filterType == "month" ? "active" : null') месяц
-							//- 		td(
-							//- 			@click='setFilter("today"), waybillsSort()'
-							//- 			:class='filterType == "today" ? "active" : null') сегодня
-							//- 	tr
-							//- 		td(
-							//- 			@click='setFilter("week"), waybillsSort()'
-							//- 			:class='filterType == "week" ? "active" : null') неделя
-							//- 		td(
-							//- 			@click='setFilter("range"), waybillsSort()'
-							//- 			:class='filterType == "range" ? "active" : null') период
+							table
+								tr
+									td(
+										@click='setFilter("year"), getAutographReport()'
+										:class='filter == "year" ? "active" : null') весь год
+									td(
+										@click='setFilter("yest"), getAutographReport()'
+										:class='filter == "yest" ? "active" : null') вчера
+								tr
+									td(
+										@click='setFilter("month"), getAutographReport()'
+										:class='filter == "month" ? "active" : null') месяц
+									td(
+										@click='setFilter("today"), getAutographReport()'
+										:class='filter == "today" ? "active" : null') сегодня
+								tr
+									td(
+										@click='setFilter("week"), getAutographReport()'
+										:class='filter == "week" ? "active" : null') неделя
+									td(
+										@click='setFilter("range"), getAutographReport()'
+										:class='filter == "range" ? "active" : null') период
 							.level-item
 								.wrapper.from(
 									@click='openFrom')
@@ -43,7 +43,7 @@
 										:autograph='true'
 										:time='false')
 								.wrapper.to(
-									@click='openTo')
+									@click='to')
 									p {{ stringTo }}
 									Calendar(
 										@select='setDateTo'
@@ -83,7 +83,8 @@ export default {
 		...mapState('reports', {
 			dateTo: state => state.dateTo,
 			dateFrom: state => state.dateFrom,
-			carsList: state => state.carsList
+			carsList: state => state.carsList,
+			filter: state => state.filter
 		}),
 		stringFrom() {
 			let date = new Date(this.dateFrom)
@@ -96,12 +97,26 @@ export default {
 	},
 	methods: {
 		...mapActions('reports', {
-			getAutographReport: 'apiAutographReport'
+			getAutographReport: 'apiAutographReport',
+			setDates: 'setDates'
 		}),
 		...mapMutations('reports', {
 			setDateTo: 'setDateTo',
-			setDateFrom: 'setDateFrom'
+			setDateFrom: 'setDateFrom',
+			setFilter: 'setFilter'
 		}),
+		to(date) {
+			this.setDateTo(date)
+				.then(() => {
+					this.getAutographReport()
+				})
+		},
+		from(date) {
+			this.setDateFrom(date)
+				.then(() => {
+					this.getAutographReport()
+				})
+		},
 		openTo(e) {
 			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
 				this.showTo = !this.showTo
@@ -124,6 +139,9 @@ export default {
 		},
 	},
 	beforeMount() {
+		if (this.dateTo == 'null' || this.dateFrom == 'null' || !this.dateTo || !this.dateFrom || this.dateFrom == "Invalid Date" || this.dateTo == "Invalid Date") {
+			this.setDates()
+		}
 	}
 }
 </script>
@@ -176,12 +194,15 @@ export default {
 				.level-right
 					.level-item
 						display: flex
-						align-items: flex-end
+						align-items: center
 						justify-content: flex-end
-						flex-direction: column
+						.level-item
+							align-items: flex-end
+							flex-direction: column
 
 						table
 							width: 10rem
+							margin-right: 1rem
 							td
 								font-size: .875rem
 								color: $graphite2

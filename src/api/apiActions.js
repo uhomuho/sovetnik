@@ -45,7 +45,7 @@ export default {
 	},
 	getAutographReport(params) {
 		let method = config.reportTrack
-		return api().get(`${method}?start=${params.from.year}-${params.from.month}-${params.from.day}T07%3A00%2B03:00&end=${params.to.year}-${params.to.month}-${params.to.day}T19%3A00%2B03:00`)
+		return api().get(`${method}?start=${params.from.year}-${params.from.month}-${params.from.day}T07%3A00${params.from.timezone}&end=${params.to.year}-${params.to.month}-${params.to.day}T19%3A00${params.to.timezone}`)
 	},
 	getWaybillReport(params) {
 		let method = config.reportWaybill

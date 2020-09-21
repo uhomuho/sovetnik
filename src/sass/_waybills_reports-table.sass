@@ -89,9 +89,107 @@
 			th
 				font-size: .875rem
 				vertical-align: middle
-				&.status,
+				&.status
+					.dropdown
+						@include flex(flex-start, center)
+						position: relative
+						&.is-active
+							.icon
+								transform: rotate(180deg)
+						.icon
+							height: .5rem
+							margin-left: .2rem
+							margin-right: .5rem
+							transition: all .1s ease-in-out
+						.menu
+							background-color: #fff
+							border: 1px dashed $graphite1
+							box-shadow: 0px 8px 32px rgba(176, 191, 198, 0.5)
+							padding: 2rem 1.25rem
+							position: absolute
+							top: 115%
+							left: 0
+							z-index: 99
+							label
+								font-size: .625rem
+								display: flex
+								justify-content: space-between
+								position: relative
+								&::after
+									display: block
+									content: ""
+									width: .75rem
+									height: .75rem
+									margin-left: 1rem
+									border: 2px solid $graphite2
+							input
+								visibility: hidden
+								position: absolute
+								&#close
+									&+label
+										color: $red4
+								&#check
+									&+label
+										color: $orange4
+								&#open
+									&+label
+										color: $teal4
+								&:checked
+									&+label::after
+										background: center / contain no-repeat url('/icons/check.svg')
 				&.car
 					cursor: pointer
+					.dropdown
+						@include flex(flex-start, center)
+						position: relative
+						&.is-active
+							.icon
+								transform: rotate(180deg)
+						.icon
+							height: .5rem
+							margin-left: .2rem
+							margin-right: .5rem
+							transition: all .1s ease-in-out
+						.menu
+							min-width: 34rem
+							background-color: #fff
+							position: absolute
+							top: 100%
+							left: 0
+							z-index: 99
+							.tile.is-child
+								padding: 1.25rem
+								border: 1px dashed $graphite1
+								&:first-of-type
+									padding-right: .5rem
+									.title
+										padding: 0 .4rem
+								&:last-of-type
+									border-left: none 
+								.title
+									font-family: 'Cabin', sans-serif
+									font-size: .625rem
+									color: $graphite2
+									margin-bottom: .5rem
+								.choose
+									font-size: .875rem
+									color: $graphite4
+									padding: .2rem .4rem
+									border-radius: 4px
+									cursor: pointer
+									&.selected
+										background-color: $graphite4
+										color: #fff
+								.num
+									font-family: 'Cabin', sans-serif
+									font-size: 1rem
+									text-align: left
+									color: $graphite4
+									border-radius: 4px
+									cursor: pointer
+									&.selected
+										background-color: $graphite4
+										color: #fff
 				table
 					width: 100%
 					td
@@ -99,6 +197,11 @@
 						border: none
 		tbody 
 			tr
+				cursor: pointer
+				&:hover
+					background-color: $lineHover
+				&.selected
+					background-color: $lineHover
 				td
 					vertical-align: middle
 					&.id
@@ -132,6 +235,14 @@
 								&:last-of-type
 									text-align: right
 									width: 50%
+					&.fuel
+						td
+							min-width: 50%
+							width: 50%
+					&.mileage
+						td
+							min-width: 50%
+							width: 50%
 					&.status
 						&.opened
 							color: $teal4

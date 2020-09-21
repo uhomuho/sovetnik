@@ -7,10 +7,10 @@
 					th.fuel Расход ГСМ, л
 						table
 							tr
+								td ост.нач
 								td приход
 								td расход
-								td заправка
-								td слив
+								td ост.кон
 					th.distance Пройдено, км
 						table
 							tr
@@ -28,10 +28,10 @@
 					td.fuel.is-paddingless
 						table
 							tr
+								td {{ waybill.firstFuel }}
 								td {{ waybill.motionFuelUp }}
 								td {{ waybill.motionFuelDown }}
-								td {{ waybill.tankFuelUp }}
-								td {{ waybill.tankFuelDown }}
+								td {{ waybill.lastFuel }}
 					td.distance.is-paddingless
 						table
 							tr

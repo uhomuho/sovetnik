@@ -80,9 +80,6 @@ export default {
 	data() {
 		return {
 			isLoading: false,
-			happens: 20,
-			expired: 12,
-			fixed: 5,
 			showTo: false,
 			showFrom: false
 		}
@@ -152,14 +149,18 @@ export default {
 	},
 	mounted() {
 
-		if (!this.waybillsSortData) {
+		if(!this.dateTo || !this.dateFrom || this.dateFrom == "Invalid Date" || this.dateTo == "Invalid Date") {
+			this.setDates()
+				.then(() => {
+					this.isLoading = true
+					this.getWaybills()
+						.then(() => this.isLoading = false)
+				})
+		} else {
 			this.isLoading = true
-			this.getWaybills()
-				.then(() => this.isLoading = false)
+				this.getWaybills()
+					.then(() => this.isLoading = false)
 		}
-	},
-	beforeMount() {
-		this.setDates()
 	}
 }
 

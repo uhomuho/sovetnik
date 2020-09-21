@@ -50,7 +50,7 @@
 				hr(v-if='waybill')
 
 				img( 
-					src="/img/canvas.png"
+					:src='`${mode == "development" ? "/" : $userConfig.publicPath}img/canvas.png`'
 					v-if='waybill')
 
 				.tile.is-ancestor(v-if='waybill')
@@ -66,16 +66,16 @@
 								tbody
 									tr
 										td.name Расход топлива
-										td 90,2
-										td 92,5
+										td {{ totalTrackFuel }}
+										td {{ totalWaybillFuel }}
 									tr
 										td.name Пробег
-										td 105
-										td 109
+										td {{ waybill.trackMileage.toFixed(2) }}
+										td {{ waybill.mileageTotal }}
 									tr
 										td.name Время
-										td 12:38
-										td 12:00
+										td {{ trackTimeDiff }}
+										td {{ waybillTimeDiff }}
 						.tile.is-child
 							p.title Сравнение адресов
 							.tile
@@ -129,7 +129,8 @@ export default {
 		return {
 			wbId: this.id ? this.id : null,
 			registrationPlate: this.waybill ? this.waybill.car.registrationPlate : null,
-			hint: false
+			hint: false,
+			mode: process.env.NODE_ENV
 		}
 	},
 	components: {},
@@ -151,6 +152,18 @@ export default {
 				return null
 			}
 		},
+		totalWaybillFuel() {
+			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
+		},
+		totalTrackFuel() {
+			return parseInt(this.waybill.trackFuelDown) - parseInt(this.waybill.trackFuelUp)
+		},
+		waybillTimeDiff() {
+			return this.$moment.utc(this.$moment(new Date(this.waybill.startPlan),"DD/MM/YYYY HH:mm:ss").diff(this.$moment(new Date(this.waybill.finishPlan),"DD/MM/YYYY HH:mm:ss"))).format("HH:mm")
+		},
+		trackTimeDiff() {
+			return this.$moment.utc(this.$moment(new Date(this.waybill.startFact),"DD/MM/YYYY HH:mm:ss").diff(this.$moment(new Date(this.waybill.finishFact),"DD/MM/YYYY HH:mm:ss"))).format("HH:mm")
+		}
 	},
 	methods: {
 		...mapActions('reports', {

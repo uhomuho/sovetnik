@@ -9,7 +9,7 @@ export default () => {
 	const url = config.backendUrl,
 				dev = process.env.NODE_ENV == 'development' ? true : false,
 				axiosInstance = axios.create({
-					baseURL: `${dev ? 'https://uhomuhoproxy.herokuapp.com/' : ''}${url}`
+					baseURL: `${dev ? 'https://uhomuhoproxy.herokuapp.com/'+url : '/'}`
 				}),
 				isHandlerEnabled = (config = {}) => !config.handlerEnabled,
 				errorHandler = error => {

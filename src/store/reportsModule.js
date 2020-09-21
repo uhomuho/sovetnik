@@ -1,9 +1,16 @@
 import api from '@/api/apiActions'
 import monthName from '@/month'
+import config from '../../public/config.js'
 
 const randomDate = (start, end) => {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).getTime();
 }
+
+function setLocalDataNull(data) {
+	localStorage.setItem(data, null)
+}
+setLocalDataNull('dateFrom')
+setLocalDataNull('dateTo')
 
 let dateTo = localStorage.getItem('dateTo'),
 		dateFrom = localStorage.getItem('dateFrom')
@@ -16,9 +23,10 @@ export default {
 		totalData: null,
 		filteredWaybillsReports: null,
 		carsList: null,
-		dateTo: dateTo ? dateTo : new Date(2020, 8, 20),
-		dateFrom: dateFrom ? dateFrom : new Date(),
+		dateTo: dateTo ? dateTo : null,
+		dateFrom: dateFrom ? dateFrom : null,
 		waybillReport: null,
+		filter: "range"
 		// plateSearchKey: null
 	},
 	getters: {
@@ -54,21 +62,199 @@ export default {
 		setWaybillReport(state, payload) {
 			state.waybillReport = payload
 		},
+		setFilter(state, payload) {
+			state.filter = payload
+		}
 		// setPlateSearchKey(state, payload) {
-		// 	state.plateSearchKey = payload
-		// }
-	},
-	actions: {
-		apiWaybillReport({ commit }, params) {
+			// 	state.plateSearchKey = payload
+			// }
+		},
+		actions: {
+			apiAutographReport({ commit, state }) {
+				let dateFrom 		= new Date(state.dateFrom),
+						dateTo 			= new Date(state.dateTo),
+						curYear 		= new Date().getFullYear(),
+						curMonth 		= monthName.num[new Date().getMonth()],
+						curDay 			= new Date().getDate(),
+						timezone 		= config.global.timezone,
+						params,
+						curWeekDay,
+						weekStart,
+						weekEnd
+
+				if ( `${timezone}`.includes('-') ) {
+					timezone = `${timezone}`.replace('-', '%2D')
+				} else {
+					timezone = `${timezone}`.replace('+', '%2B')
+				}
+
+				switch(state.filter) {
+
+					// Filter by year
+					case "year":
+						params = {
+							from: {
+								year: new Date().getFullYear(),
+								month: '01',
+								day: '01',
+								timezone: timezone
+							},
+							to: {
+								year: new Date().getFullYear(),
+								month: '12',
+								day: '31',
+								timezone: timezone
+							}
+						}
+						break;
+	
+					// Filter by yestarday
+					case "yest":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: curDay - 1,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: curDay - 1,
+								timezone: timezone
+							}
+						}
+						break;
+	
+					// Filter by month
+					case "month":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: '01',
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: new Date(curYear, curMonth, 0).getDate(),
+								timezone: timezone
+							}
+						}
+						break;
+	
+					// Filter by today
+					case "today":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: curDay,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: curDay,
+								timezone: timezone
+							}
+						}
+						break;
+	
+					// Filter by week
+					case "week":
+						curWeekDay 	= new Date().getDay() - 1
+						weekStart 	= curDay - curWeekDay
+						weekEnd 		= weekStart + 6
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: weekStart,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: weekEnd,
+								timezone: timezone
+							}
+						}
+						break;
+	
+					// Filter by range
+					case "range":
+						params 			= {
+							from: {
+								year: dateFrom.getFullYear(),
+								month: monthName.num[dateFrom.getMonth()],
+								day: `${dateFrom.getDate()}`.length == 1 ? `0${dateFrom.getDate()}` : dateFrom.getDate(),
+								timezone: timezone
+							},
+							to: {
+								year: dateTo.getFullYear(),
+								month: monthName.num[dateTo.getMonth()],
+								day: `${dateTo.getDate()}`.length == 1 ? `0${dateTo.getDate()}` : dateTo.getDate(),
+								timezone: timezone
+							}
+						}
+						break;
+				}
+				api.getAutographReport(params)
+					.then(r => {
+						let report = r.data.data,
+								total  = {
+									motionFuelUp: 0,
+									motionFuelDown: 0,
+									tankFuelUp: 0,
+									tankFuelDown: 0
+								}
+						
+						for (var i = 0; i <= report.length - 1; i++) {
+							report[i].idingDistance = report[i].totalDistance - report[i].workDistance
+		
+							total.motionFuelUp += report[i].motionFuelUp ? Number(report[i].motionFuelUp) : 0
+							total.motionFuelDown += report[i].motionFuelDown ? Number(report[i].motionFuelDown) : 0
+							total.tankFuelUp += report[i].tankFuelUp ? Number(report[i].tankFuelUp) : 0
+							total.tankFuelDown += report[i].tankFuelDown ? Number(report[i].tankFuelDown) : 0
+		
+							for (var key in report[i]) {
+								let field = report[i][key]
+								if (typeof field == 'number') {
+									if (!Number.isInteger(field)) {
+										report[i][key] = report[i][key].toFixed(2).replace(".", ",")
+									}
+								}
+							}
+						}
+						total.motionFuelUp = total.motionFuelUp.toFixed(2).replace(".", ",")
+						total.motionFuelDown = total.motionFuelDown.toFixed(2).replace(".", ",")
+						total.tankFuelUp = total.tankFuelUp.toFixed(2).replace(".", ",")
+						total.tankFuelDown = total.tankFuelDown.toFixed(2).replace(".", ",")
+		
+						commit('setTotalData', total)
+						commit('setAutographReport', report)
+					})
+					.catch(err => console.error(err))
+			},
+			apiWaybillReport({ commit }, params) {
 			api.getWaybillReport(params)
 				.then(r => {
-					console.log(r)
 					// commit('setPlateSearchKey', r.data.waybill.car.registrationPlate)
 					commit('setWaybillReport', r.data.waybill)
 				})
 				.catch(err => {
 					console.error(err)
 				})
+		},
+		setDates ({ commit }) {
+			let date = new Date()
+			
+			let from = new Date(date.setMonth(date.getMonth() - 3))
+			commit('setDateFrom', {date: from})
+			let to = new Date(date.setMonth(date.getMonth() + 4))
+			commit('setDateTo', {date: to})
 		},
 		apiWaybillsReport({ commit }) {
 			const count = 30
@@ -132,59 +318,6 @@ export default {
 
 			commit('setCarsList', cars)
 			commit('setWaybillsReports', reports)
-		},
-		apiAutographReport({ commit, state }) {
-			let dateFrom 	= new Date(state.dateFrom),
-					dateTo 		= new Date(state.dateTo),
-					params 		= {
-						from: {
-							year: dateFrom.getFullYear(),
-							month: monthName.num[dateFrom.getMonth()],
-							day: `${dateFrom.getDate()}`.length == 1 ? `0${dateFrom.getDate()}` : dateFrom.getDate() 
-						},
-						to: {
-							year: dateTo.getFullYear(),
-							month: monthName.num[dateTo.getMonth()],
-							day: `${dateTo.getDate()}`.length == 1 ? `0${dateTo.getDate()}` : dateTo.getDate() 	
-						}
-					}
-			api.getAutographReport(params)
-				.then(r => {
-					let report = r.data.data,
-							total  = {
-								motionFuelUp: 0,
-								motionFuelDown: 0,
-								tankFuelUp: 0,
-								tankFuelDown: 0
-							}
-					
-					for (var i = 0; i <= report.length - 1; i++) {
-						console.log(report[i])
-						report[i].idingDistance = report[i].totalDistance - report[i].workDistance
-
-						total.motionFuelUp += report[i].motionFuelUp ? Number(report[i].motionFuelUp) : 0
-						total.motionFuelDown += report[i].motionFuelDown ? Number(report[i].motionFuelDown) : 0
-						total.tankFuelUp += report[i].tankFuelUp ? Number(report[i].tankFuelUp) : 0
-						total.tankFuelDown += report[i].tankFuelDown ? Number(report[i].tankFuelDown) : 0
-
-						for (var key in report[i]) {
-							let field = report[i][key]
-							if (typeof field == 'number') {
-								if (!Number.isInteger(field)) {
-									report[i][key] = report[i][key].toFixed(2).replace(".", ",")
-								}
-							}
-						}
-					}
-					total.motionFuelUp = total.motionFuelUp.toFixed(2).replace(".", ",")
-					total.motionFuelDown = total.motionFuelDown.toFixed(2).replace(".", ",")
-					total.tankFuelUp = total.tankFuelUp.toFixed(2).replace(".", ",")
-					total.tankFuelDown = total.tankFuelDown.toFixed(2).replace(".", ",")
-
-					commit('setTotalData', total)
-					commit('setAutographReport', report)
-				})
-				.catch(err => console.error(err))
 		},
 		filterReports({ commit, state }, filter) {
 			let waybills = state.waybillsReports,
