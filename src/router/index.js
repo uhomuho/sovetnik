@@ -74,8 +74,8 @@ export default new Router({
 					]
 				},
 				{
-					path: 'preview/:id',
-					nae: 'PreviewWaybill',
+					path: 'preview',
+					name: 'PreviewWaybill',
 					component: Preview,
 					hidden: true
 				}

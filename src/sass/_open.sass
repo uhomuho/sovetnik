@@ -102,12 +102,30 @@
 									&.is-danger
 										color: $red4
 
-							.dropdown
-								width: 100%
 
-								&.is-active
-									img.icon
-										transform: rotate(180deg)
+							.dropdown
+								position: absolute
+								top: 100%
+								left: 0
+								z-index: 99
+								background-color: #fff
+								box-shadow: 0px 8px 32px rgba(176, 191, 198, 0.5)
+								display: flex
+								flex-direction: column
+								align-items: flex-start
+								justify-content: flex-start
+								padding: .3rem .5rem
+								p
+									color: $blue4
+									padding: .3rem
+						
+							&.plate
+								position: relative
+
+
+						&.is-active
+							img.icon
+								transform: rotate(180deg)
 
 								.dropdown-trigger
 									width: 100%

@@ -169,15 +169,6 @@
 				height: 0.464912,
 				fill: "#B0BFC6"
 			} )
-			//- v-text( :config={
-			//- 	x: 58.11,
-			//- 	y: 79.04,
-			//- 	text: "Камаз",
-			//- 	fontFamily: "Montserrat",
-			//- 	fontSize: 4.64912,
-			//- 	fontStyle: 700,
-			//- 	fill: "#253238"
-			//- } )
 			v-rect(
 				:config={
 					x: 55.11,

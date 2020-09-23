@@ -34,24 +34,19 @@ div
 							.level-item
 								|Гос. номер:
 						.level-right
-							.level-item
-								b-dropdown( 
-									aria-role="list"
-									:scrollable='true',
-									max-height="400")
-									.wrapper( slot="trigger" )
-										input.plate(
-											@keyup='filterPlates'
-											v-model='registrationPlate'
-											placeholder="Гос. номер")
-										img.icon( src="@/assets/icons/angle-4.svg" )
-
-									b-dropdown-item(
-										v-if='registrationPlate'
-										v-for='car in listCar'
-										:key='car.serial'
-										@click='setRegistrationPlate(car), getLastWb()'
-										:class='car.registrationPlate == registrationPlate ? "is-active" : null') {{ car.registrationPlate }}
+							.level-item.plate(
+								:class='plates ? "is-active" : ""')
+									input(
+										@keyup='filterPlates'
+										:value='waybill.car.registrationPlate'
+										placeholder="Гос. номер")
+									img.icon( src="@/assets/icons/angle-4.svg" )
+									.plates.dropdown(v-if='plates')
+										p(
+											v-for='plate in plates'
+											@click='setCar(plate), getLastWb(plate.serial), plates = null'
+											:class='plate.registrationPlate == waybill.car.registrationPlate ? "selected" : ""')
+											| {{ plate.registrationPlate }}
 
 					.level
 						.level-left
@@ -59,23 +54,19 @@ div
 								|Водитель:
 						.level-right
 							.level-item
-								b-dropdown(
-									aria-role="list"
-									:scrollable='true'
-									max-height="400")
-									.wrapper( slot="trigger" )
-										input.driver(
-											@keyup="filterDriver" 
-											v-model="driver"
-											placeholder="Водитель")
-										img.icon( src="@/assets/icons/angle-4.svg")
+								input.driver(
+									@keyup="filterDriver" 
+									v-model="waybill.driver.name"
+									placeholder="Водитель")
+								img.icon( src="@/assets/icons/angle-4.svg")
 
-									b-dropdown-item(
-										v-if='driver'
-										v-for='driver in listDrivers'
-										:key='driver.driverId'
-										@click='setDriver(driver)'
-										:class='driver.id == driver ? "is-active" : null') {{ driver.name }}
+								.drivers.dropdown(
+									v-if='drivers')
+									p(
+										v-for='driver in drivers'
+										@click='setDriver(driver), drivers = null'
+										:class='driver.id == waybill.driver.id ? "selected" : ""')
+										|{{ driver.name }}
 					.level
 						.level-left
 							.level-item
@@ -123,9 +114,9 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='lastWb && lastWb.waybill !== null ? lastWb.waybill.mileageFinish : waybill.mileageStart'
+									v-model='waybill.mileageStart'
 									placeholder="Спидометр в начале смены")
-								span.hint.is-danger(v-if='!lastWb || lastWb.waybill == null') Нет данных с предыдущей смены
+								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
 					
 					.level
@@ -135,9 +126,9 @@ div
 						.level-right
 							.level-item
 								input(
-									v-model='lastWb && lastWb.waybill !== null ? lastWb.waybill.fuelFinish : waybill.fuelStart'
+									v-model='waybill.fuelStart'
 									placeholder="Топливо в начале смены")
-								span.hint.is-danger(v-if='!lastWb || lastWb.waybill == null') Нет данных с предыдущей смены
+								span.hint.is-danger(v-if='!lastWb') Нет данных с предыдущей смены
 								span.hint(v-else) (показание предыдущей смены)
 
 				.tile
@@ -147,10 +138,10 @@ div
 						:model='waybill.car && waybill.car.model ? waybill.car.model : null'
 						:registrationPlate='waybill.car && waybill.car.registrationPlate ? waybill.car.registrationPlate : null'
 						:serial='waybill.serial'
-						:driver='driver'
+						:driver='waybill.driver'
 						:task='waybill.workText'
-						:mileageLast='lastWb && lastWb.waybill !== null ? lastWb.waybill.mileageFinish : waybill.mileageStart'
-						:fuelLast='lastWb && lastWb.waybill !== null ? lastWb.waybill.fuelFinish : waybill.fuelStart',
+						:mileageLast='waybill.mileageStart'
+						:fuelLast='waybill.fuelStart',
 						:dateStart='waybill.startPlan'
 						:dateFinish='waybill.finishPlan')
 			hr
@@ -160,7 +151,8 @@ div
 					placeholder="Задание",
 					v-model='waybill.workText')
 
-			.button.is-pulled-right(@click='openWb()') Просмотр
+			.button.is-pulled-right(
+				@click.prevent='openWb()') Просмотр
 
 			b-loading(
 				v-if="isLoading"
@@ -196,7 +188,9 @@ export default {
 			carSerial: null,
 			driver: null,
 			lastWb: null,
-			mode: process.env.NODE_ENV
+			mode: process.env.NODE_ENV,
+			plates: null,
+			drivers: null
 		}
 	},
 	computed: {
@@ -258,20 +252,15 @@ export default {
 	},
 	methods: {
 		async openWb() {
-			for (var data in this.formData) {
-				if (!this.formData[data]) {
-					Snackbar.open({
-						message: 'Заполните все поля!',
-						type: 'is-danger'
-					})
-					return false
-				}
+			this.error = false
+			if (!this.waybill.id || !this.waybill.of || !this.waybill.car.registrationPlate || !this.waybill.driver.name || !this.waybill.fuelStart || !this.waybill.mileageStart || !this.waybill.workText || !this.waybill.startPlan || !this.waybill.finishPlan) {
+				return Snackbar.open({
+					message: 'Не все поля заполнены или заполнены неверно!'
+				})
 			}
-			let newWaybill = {
-				waybill: this.formData
-			}
-			this.setNewWaybill(newWaybill)
-			
+
+			this.setNewWaybill({waybill: this.waybill})
+			this.$router.push({name: "PreviewWaybill"})
 		},
 		...mapActions('waybills', {
 			getNewWaybill: 'getNewWaybillData'
@@ -279,21 +268,30 @@ export default {
 		...mapMutations('waybills', {
 			setListDrivers: 'setListDrivers',
 			setListCars: 'setListCars',
-			setNewWaybill: 'setAllNewWaybillData'
+			setNewWaybill: 'setAllNewWaybillData',
+			setPlate: 'setNewWbRegistrationPlate',
+			setDriverName: 'setNewWbDriverName',
+			setCar: 'setNewWbCar'
 		}),
-		async filterDriver() {
-			await api.getDrivers(this.driver)
+		async filterDriver(e) {
+			this.setDriverName(e.target.value)
+			await api.getDrivers(e.target.value)
+				.then(r => this.drivers = r.data.listDrivers)
+		},
+		async filterPlates(e) {
+			this.setPlate(e)
+			await api.getPlates(e.target.value)
+				.then(r => this.plates = r.data.listCar)
+		},
+		async getLastWb(serial) {
+			await api.getLastWb({serial: serial})
 				.then(r => {
-					this.setListDrivers(r.data.listDrivers)
+					this.lastWb = r.data.waybill
+					if (this.lastWb) {
+						this.waybill.mileageStart = this.lastWb.mileageFinish
+						this.waybill.fuelStart = this.lastWb.fuelFinish
+					}
 				})
-		},
-		async filterPlates() {
-			await api.getPlates(this.registrationPlate)
-				.then(r => this.setListCars(r.data.listCar))
-		},
-		async getLastWb() {
-			await api.getLastWb({serial: this.waybill.serial})
-				.then(r => this.lastWb = r.data)
 		},
 		selectStart(data) {
 			this.waybill.startPlan = data.date.getTime()
@@ -348,7 +346,7 @@ export default {
 		},
 		setDriver(obj) {
 			this.driver = obj.name
-			this.waybill.driverId = obj.id
+			this.waybill.driver = obj
 		}
 	},
 	beforeMount() {
@@ -358,7 +356,7 @@ export default {
 				.then(() => this.isLoading = false)
 		}
 		if (this.registrationPlate) {
-			this.getLastWb()
+			this.getLastWb(this.waybill.serial)
 		}
 	}
 }

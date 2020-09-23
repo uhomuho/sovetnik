@@ -14,7 +14,7 @@ module.exports = {
 	getWaybillOpen: "waybill/open.json",
 
 	// Открытие путевого листа 
-	setWaybillOpen: "waybill/openJson",
+	setWaybillOpen: "waybill/open.json",
 
 	// Поиск водителя
 	drivers: "drivers.json",

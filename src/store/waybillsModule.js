@@ -73,16 +73,47 @@ export default {
 				state.newWaybill = payload.waybill
 				localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
 			}
-
+			
 			if (payload.newListDrivers) {
 				state.newListDrivers = payload.listDrivers
 				localStorage.setItem('newListDrivers', JSON.stringify(state.newListDrivers))
 			}
-
+			
 			if (payload.newListCar) {
 				state.newListCar = payload.listCar
 				localStorage.setItem('newListCar', JSON.stringify(state.newListCar))
 			}
+		},
+		setNewWbId (state, payload) {
+			state.newWaybill.id = payload.target.value
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+		},
+		setNewWbRegistrationPlate (state, payload) {
+			state.newWaybill.car.registrationPlate = payload.target.value
+		},
+		setNewWbDateOf (state, payload) {
+			state.newWaybill.of = payload
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+		},
+		setNewWbCar (state, payload) {
+			state.newWaybill.car = payload
+			state.newWaybill.serial = payload.serial
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+		},
+		setNewWbDriverName (state, payload) {
+			state.newWaybill.driver.name = payload
+		},
+		setNewWbDriver (state, payload) {
+			state.newWaybill.driver = payload
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+		},
+		setNewWbTask (state, payload) {
+			state.newWaybill.workText = payload.target.value
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
+		},
+		setNewWbFuelStart (state, payload) {
+			state.newWaybill.fuelStart = payload.target.value
+			localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
 		},
 		setListDrivers(state, payload) {
 			state.newListDrivers = payload
