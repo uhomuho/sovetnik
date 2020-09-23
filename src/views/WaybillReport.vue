@@ -49,10 +49,14 @@
 
 				hr(v-if='waybill')
 
-				img( 
-					:src='`${mode == "development" ? "/" : $userConfig.publicPath}img/canvas.png`'
-					v-if='waybill')
-
+				//- img( 
+				//- 	:src='`${mode == "development" ? "/" : $userConfig.publicPath}img/canvas.png`'
+				//- 	v-if='waybill')
+				Chart(
+					v-if='waybillReport'
+					:items='chartData',
+					:line='waybillReport.lineConfig'
+					:steps='waybillReport.steps')
 				.tile.is-ancestor(v-if='waybill')
 					.tile.is-parent.is-paddingless
 						.tile.is-child
@@ -122,6 +126,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import monthName from '@/month'
+import Chart from '@/components/canvas/_wb-chart'
 
 export default {
 	name: 'Report',
@@ -133,7 +138,9 @@ export default {
 			mode: process.env.NODE_ENV
 		}
 	},
-	components: {},
+	components: {
+		Chart
+	},
 	props: {
 		id: {
 			default: null
@@ -141,8 +148,14 @@ export default {
 	},
 	computed: {
 		...mapGetters('reports', {
-			waybill: 'getWaybillReport'
+			waybillReport: 'getWaybillReport'
 		}),
+		waybill() {
+			return this.waybillReport ? this.waybillReport.waybill : null
+		},
+		chartData() {
+			return this.waybillReport ? this.waybillReport.track : null
+		},
 		dateStringOf() {
 			if (this.waybill) {
 				let date = new Date(this.waybill.of),
@@ -156,7 +169,7 @@ export default {
 			return parseInt(this.waybill.fuelStart) + parseInt(this.waybill.fuelVolume) - parseInt(this.waybill.fuelFinish)
 		},
 		totalTrackFuel() {
-			return parseInt(this.waybill.trackFuelDown) - parseInt(this.waybill.trackFuelUp)
+			return (parseInt(this.waybill.trackFuelDown) - parseInt(this.waybill.trackFuelUp)) < 0 ? 0 : parseInt(this.waybill.trackFuelDown) - parseInt(this.waybill.trackFuelUp)
 		},
 		waybillTimeDiff() {
 			return this.$moment.utc(this.$moment(new Date(this.waybill.startPlan),"DD/MM/YYYY HH:mm:ss").diff(this.$moment(new Date(this.waybill.finishPlan),"DD/MM/YYYY HH:mm:ss"))).format("HH:mm")

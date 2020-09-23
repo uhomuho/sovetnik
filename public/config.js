@@ -1,6 +1,6 @@
 module.exports = {
 	// Адрес сервера 
-	backendUrl: "http://tomcat.utyf.ru/advisor/",
+	backendUrl: "http://tomcat.utyf.ru/",
 
 	// Относительный путь до директории сайта
 	publicPath: "/advisor/client/",

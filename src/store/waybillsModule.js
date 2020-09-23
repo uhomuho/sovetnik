@@ -9,7 +9,7 @@ function setLocalDataNull(data) {
 setLocalDataNull('dateFrom')
 setLocalDataNull('dateTo')
 setLocalDataNull('filterType')
-setLocalDataNull('newWaybill')
+// setLocalDataNull('newWaybill')
 setLocalDataNull('newListDrivers')
 setLocalDataNull('newListCar')
 setLocalDataNull('waybills')
@@ -106,7 +106,6 @@ export default {
 					curWeekDay,
 					weekStart,
 					weekEnd
-			console.log(state.filterType)
 
 			if ( `${timezone}`.includes('-') ) {
 				timezone = `${timezone}`.replace('-', '%2D')

@@ -19,6 +19,8 @@ import App from './App.vue'
 // Common libs
 import VueKonva from 'vue-konva'
 Vue.use(VueKonva)
+import Moment from 'moment'
+Vue.prototype.$moment = Moment
 
 // Config file
 import config from '../public/config'
