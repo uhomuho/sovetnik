@@ -7,8 +7,7 @@
 			})
 			v-layer
 				v-group(
-					v-for='step in steps'
-					:key='step.num')
+					v-for='step in steps')
 					v-rect(	
 						:config=`{
 							x: 0,
@@ -31,7 +30,6 @@
 				v-group(
 					v-if='chart'
 					v-for='(item, key) in chart'
-					:key='key'
 					:config=`{
 						height: 425,
 						width: 907/chart.length
@@ -49,11 +47,8 @@
 					:config='line')
 				v-circle(
 					v-for='(item, key) in chart'
-					:key='key'
 					:config='configItem && configItem.id == item.config.id ? configItem : item.config')
-				v-group(
-					v-for='(item, key) in chart'
-					:key='key')
+				v-group(v-for='(item, key) in chart')
 					v-text(
 						v-if='item.maxFuelDown'
 						:config=`{
@@ -101,11 +96,9 @@
 							fill: "#617E8C"
 						})
 				v-group(
-					v-for='step in steps'
-					:key='step.num')
+					v-for='step in steps')
 						v-rect(
 							v-for='(item, key) in chart'
-							:key='key'
 							:config=`{
 								x: items[key].config.x - ((907/items.length)/2),
 								y: step.y,
