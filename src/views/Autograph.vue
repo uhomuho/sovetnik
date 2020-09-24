@@ -39,17 +39,19 @@
 									p {{ stringFrom }}
 									Calendar(
 										@select='setDateFrom'
-										v-if='showFrom'
+										v-if='showFrom && !invalidDate(dateFrom)'
 										:autograph='true'
+										:date='new Date(dateFrom)'
 										:time='false')
 								.wrapper.to(
-									@click='to')
+									@click='openTo')
 									p {{ stringTo }}
 									Calendar(
 										@select='setDateTo'
-										v-if='showTo'
+										v-if='showTo && !invalidDate(dateTo)'
 										:autograph='true'
 										:time='false'
+										:date='new Date(dateTo)'
 										:range='false')
 
 				hr
@@ -137,6 +139,13 @@ export default {
 				}
 			}
 		},
+		invalidDate(date) {
+			if (date == "Invalid Date") {
+				return true
+			} else {
+				return false
+			}
+		}
 	},
 	beforeMount() {
 		if (this.dateTo == 'null' || this.dateFrom == 'null' || !this.dateTo || !this.dateFrom || this.dateFrom == "Invalid Date" || this.dateTo == "Invalid Date") {

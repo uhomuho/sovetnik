@@ -18,7 +18,8 @@ div
 									|№
 									input.id( 
 										v-model='waybill.id'
-										type="number")
+										type="number"
+										@input='changeWidthId')
 							.level-right
 								.level-item
 									|от
@@ -330,13 +331,15 @@ export default {
 				}
 			}
 		},
-		changeWidthId(target) {
+		changeWidthId() {
 			if (this.waybill.id) {
-				let width = this.waybill.id.length * 12
-				document.querySelector(target).style.width = `${width}px`
+				if (this.waybill.id.length <= 5) {
+					let width = this.waybill.id.length * 30
+					document.querySelector(".id").style.width = `${width}px`
+				}
 				// this.milleageFinish = this.milleageFinish.toLocaleString()
 			} else {
-				document.querySelector(target).style.width = `0px`
+				document.querySelector(".id").style.width = `0px`
 			}
 		},
 		setRegistrationPlate(obj) {
@@ -357,6 +360,17 @@ export default {
 		}
 		if (this.registrationPlate) {
 			this.getLastWb(this.waybill.serial)
+		}
+		if (!this.waybill.driver) {
+			this.waybill.driver = {
+				name: null
+			}
+		}
+		if (!this.waybill.car) {
+			this.waybill.car = {
+				registrationPlate: null,
+				model: null
+			}
 		}
 	}
 }

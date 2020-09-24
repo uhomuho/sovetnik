@@ -38,6 +38,7 @@
 								@click='openFrom')
 								p {{ stringFrom }}
 								Calendar(
+									v-if='!invalidDate(dateFrom)'
 									:class='showFrom ? null : "is-hidden"'
 									@select='setFrom'
 									:time='false',
@@ -46,6 +47,7 @@
 								@click='openTo')
 								p {{ stringTo }}
 								Calendar(
+									v-if='!invalidDate(dateTo)'
 									:class='showTo ? null : "is-hidden"'
 									@select='setTo'
 									:time='false',
@@ -144,6 +146,13 @@ export default {
 				if (this.showFrom) {
 					this.showFrom = false
 				}
+			}
+		},
+		invalidDate(date) {
+			if (date == "Invalid Date") {
+				return true
+			} else {
+				return false
 			}
 		}
 	},

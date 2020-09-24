@@ -239,83 +239,90 @@ export default {
 					.catch(err => console.error(err))
 			},
 			apiWaybillReport({ commit }, params) {
-			api.getWaybillReport(params)
-				.then(r => {
-					let x 					= 15,
-							distance 		= 897/r.data.track.length,
-							lineConfig 	= [],
-							chart 			= r.data.track,
-							max 				= 0
+				api.getWaybillReport(params)
+					.then(r => {
+						let x 					= 15,
+								distance 		= 897/r.data.track.length,
+								lineConfig 	= [],
+								chart 			= r.data.track,
+								max 				= 0
 
-					for(let key in chart) {
-						if ((chart[key].firstFuel-chart[key].lastFuel) < 0) {
-							chart[key].fuelDown = 0
-						} else {
-							chart[key].fuelDown = new Number(((chart[key].firstFuel-chart[key].lastFuel)/(chart[key].totalDistance)).toFixed(2))
+						for(let key in chart) {
+							if ((chart[key].firstFuel-chart[key].lastFuel) < 0) {
+								chart[key].fuelDown = 0
+							} else {
+								chart[key].fuelDown = new Number(((chart[key].firstFuel-chart[key].lastFuel)/(chart[key].totalDistance)).toFixed(2))
+							}
 						}
-					}
-					
-					let min = chart[0].fuelDown
-					for (let i = 0, len=chart.length; i < len; i++) {
-						let v = chart[i].fuelDown
-						max = (v > max) ? v : max
-						min = (v < min) && v > 0 ? v : min
-					}
-					
-					for(let key in chart) {
-						chart[key].config = {
-							id: key,
-							x: x + 10,
-							y: 400 -(chart[key].fuelDown * (400/((Math.ceil(max/10) * 10) + 5))),
-							radius: 10
+						
+						let min = chart[0].fuelDown
+						for (let i = 0, len=chart.length; i < len; i++) {
+							let v = chart[i].fuelDown
+							max = (v > max) ? v : max
+							min = (v < min) && v > 0 ? v : min
 						}
-						lineConfig.push(chart[key].config.x)
-						lineConfig.push(chart[key].config.y)
-						x += distance
-					}
+						
+						for(let key in chart) {
+							chart[key].config = {
+								id: key,
+								x: x + 10,
+								y: 400 -(chart[key].fuelDown * (400/((Math.ceil(max/10) * 10) + 5))),
+								radius: 10
+							}
+							lineConfig.push(chart[key].config.x)
+							lineConfig.push(chart[key].config.y)
+							x += distance
+						}
 
-					chart.filter(item => {
-						switch(item.fuelDown) {
-							case max:
-								item.maxFuelDown = true
-								item.minFuelDown = false
-								break
-							case min:
-								item.minFuelDown = true
-								item.maxFuelDown = false
-								break
-							default:
-								item.minFuelDown = false
-								item.maxFuelDown = false
-								break
+						chart.filter(item => {
+							switch(item.fuelDown) {
+								case max:
+									item.maxFuelDown = true
+									item.minFuelDown = false
+									break
+								case min:
+									item.minFuelDown = true
+									item.maxFuelDown = false
+									break
+								default:
+									item.minFuelDown = false
+									item.maxFuelDown = false
+									break
+							}
+						})
+						let steps = [],
+								count = (Math.ceil(max/10) * 10) + 5
+						for (let i = 0; i <= count; i+=5) {
+							let step = {
+								num: i,
+								y: 400 - ((400/count) * i),
+								height: 400/count
+							}
+							steps.push(step)
 						}
+						
+						r.data.steps = steps
+						r.data.track = chart
+						r.data.lineConfig = {
+							points: lineConfig,
+							stroke: "#617E8C",
+							strokeWidth: 5,
+							lineCap: "round",
+							lineJoin: "round"
+						}
+
+						let dots = []
+						for (let item of chart) {
+							dots.push(item.firstLocation)
+							dots.push(item.lastLocation)
+						}
+						r.data.trackLocations = dots
+
+						commit('setWaybillReport', r.data)
 					})
-					let steps = [],
-							count = (Math.ceil(max/10) * 10) + 5
-					for (let i = 0; i <= count; i+=5) {
-						let step = {
-							num: i,
-							y: 400 - ((400/count) * i),
-							height: 400/count
-						}
-						steps.push(step)
-					}
-					
-					r.data.steps = steps
-					r.data.track = chart
-					r.data.lineConfig = {
-						points: lineConfig,
-						stroke: "#617E8C",
-						strokeWidth: 5,
-						lineCap: "round",
-						lineJoin: "round"
-					}
-
-					commit('setWaybillReport', r.data)
-				})
-				.catch(err => {
-					console.error(err)
-				})
+					.catch(err => {
+						console.error(err)
+					})
 		},
 		setDates ({ commit }) {
 			let date = new Date()

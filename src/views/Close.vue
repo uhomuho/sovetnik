@@ -25,11 +25,12 @@ div#main(@click='close')
 											size="is-small"
 											multilined
 											always)
-											input(
+											input.id(
 												v-model="wbId"
 												placeholder="ID"
 												type="number"
-												@input='showHint')
+												@input='showHint'
+												@keyup='changeWidthId')
 							.level-right
 								.level-item(v-if='closeWaybill')
 									|от
@@ -326,6 +327,17 @@ export default {
 				this.milleageFinish = this.milleageFinish.toLocaleString()
 			} else {
 				document.querySelector('.finish').style.width = `0px`
+			}
+		},
+		changeWidthId() {
+			if (this.wbId) {
+				if (this.wbId.length <= 5) {
+					let width = this.wbId.length * 30
+					document.querySelector(".id").style.width = `${width}px`
+				}
+				// this.milleageFinish = this.milleageFinish.toLocaleString()
+			} else {
+				document.querySelector(".id").style.width = `0px`
 			}
 		},
 		close(e) {

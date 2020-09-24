@@ -23,6 +23,7 @@
 							x: 5,
 							y: step.y - 14,
 							text: step.num,
+							fontFamily: "Montserrat",
 							fontSize: 12,
 							fill: "#617E8C"
 						}`
@@ -36,15 +37,122 @@
 					}`)
 					v-rect(
 						:config=`configLine && configLine.id == item.id ? configLine : null`)
-					v-rect(
-						:config=`{
-							width: 907/chart.length,
-							height: 425,
-							x: item.config.x - configItem.radius,
-							y: 0
-						}`)
 				v-line(
 					:config='line')
+				v-group
+					v-rect(
+						:config='configPopUp.show ? configPopUp : null')
+					v-text(
+						:config='configPopUpTitle.show ? configPopUpTitle : null')
+
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + 16,
+							y: configPopUp.y + 110,
+							text: "Расход:",
+							fontFamily: "Montserrat",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 90,
+							y: configPopUp.y + 99,
+							text: configPopUp.fuelDown,
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 24
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 25,
+							y: configPopUp.y + 110,
+							text: "л/м",
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + 16,
+							y: configPopUp.y + 135,
+							text: "Пробег:",
+							fontFamily: "Montserrat",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 90,
+							y: configPopUp.y + 125,
+							text: configPopUp.totalDistance,
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 24
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 22,
+							y: configPopUp.y + 135,
+							text: "км",
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + 16,
+							y: configPopUp.y + 160,
+							text: "Длительность:",
+							fontFamily: "Montserrat",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 60,
+							y: configPopUp.y + 149,
+							text: configPopUp.totalTime,
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 24
+						}`)
+					v-text(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x + configPopUp.width - 28,
+							y: configPopUp.y + 160,
+							text: "мин",
+							fontFamily: "Montserrat",
+							textAlign: "right",
+							fill: "#617E8C",
+							fontSize: 10
+						}`)
+
+					v-rect(
+						v-if='configPopUp.show'
+						:config=`{
+							x: configPopUp.x,
+							y: configPopUp.y + 90,
+							height: 1,
+							width: configPopUp.width,
+							stroke: "#C4C4C4",
+							strokeWidth: 1,
+							dash: [4, 4]
+						}`)
 				v-circle(
 					v-for='(item, key) in chart'
 					:config='configItem && configItem.id == item.config.id ? configItem : item.config')
@@ -91,6 +199,7 @@
 							x: 25,
 							y: 8,
 							text: "Расход топлива\nпо участкам, л/м",
+							fontFamily: "Montserrat",
 							fontSize: 12,
 							fontStyle: 700,
 							fill: "#617E8C"
@@ -100,12 +209,12 @@
 						v-rect(
 							v-for='(item, key) in chart'
 							:config=`{
-								x: items[key].config.x - ((907/items.length)/2),
+								x: item.config.x - ((907/items.length)/2),
 								y: step.y,
 								height: 400/steps.length,
 								width: 907/items.length
 							}`
-							@mousemove='showItem(key, step.y)')
+							@mousemove='showItem(key, step.y, item)')
 </template>
 
 <script>
@@ -113,7 +222,6 @@ export default {
 	name: 'wbChart',
 	data() {
 		return {
-			popup: null,
 			configItem: {
 				show: true,
 				id: null,
@@ -138,6 +246,32 @@ export default {
 				width: 907,
 				fill: "rgba(238, 238, 238, 0.3)",
 				opacity: 0.1
+			},
+			configPopUp: {
+				show: false,
+				x: null,
+				y: null,
+				height: null,
+				width: null,
+				fill: "#FFFFFF",
+				shadowBlur: 10,
+				shadowOffset: { x: 0, y: 3 },
+				shadowColor: "rgba(176, 191, 198, 0.5)",
+				shadowOpacity: 0.5,
+				stroke: "#C4C4C4",
+				strokeWidth: 1,
+				dash: [4, 4]
+			},
+			configPopUpTitle: {
+				show: false,
+				x: null,
+				y: null,
+				text: null,
+				fontFamily: "Montserrat",
+				lineHeight: 1,
+				fontSize: 14,
+				wrap: "char",
+				fill: "#617E8C"
 			}
 		}
 	},
@@ -148,7 +282,7 @@ export default {
 	},
 	props: ['items', 'line', 'steps'],
 	methods: {
-		showItem(key, y) {
+		showItem(key, y, item) {
 			let itemConfig = this.chart[key].config
 			this.popup = key
 
@@ -158,6 +292,29 @@ export default {
 
 			this.configBg.y = y
 			this.configBg.height = 400/this.steps.length + 4
+
+			this.configPopUp.show = true
+			this.configPopUp.fuelDown = item.fuelDown
+			this.configPopUp.totalDistance = item.totalDistance.toFixed(2)
+			this.configPopUp.totalTime = this.$moment.utc(this.$moment(new Date(item.firstDT),"DD/MM/YYYY HH:mm:ss").diff(this.$moment(new Date(item.lastDT),"DD/MM/YYYY HH:mm:ss"))).format("mm")
+			this.configPopUp.width = 180
+			this.configPopUp.height = 200
+			if (item.config.x < 449) {
+				this.configPopUp.x = item.config.x
+			} else {
+				this.configPopUp.x = item.config.x - this.configPopUp.width
+			}
+			if (item.config.y < 150) {
+				this.configPopUp.y = item.config.y
+			} else {
+				this.configPopUp.y = item.config.y - this.configPopUp.height
+			}
+
+			this.configPopUpTitle.show = true
+			this.configPopUpTitle.width = this.configPopUp.width - 32
+			this.configPopUpTitle.x = this.configPopUp.x + 16
+			this.configPopUpTitle.y = this.configPopUp.y + 16
+			this.configPopUpTitle.text = `${item.firstLocation}\n\n${item.lastLocation}`
 
 			this.configLine.x = itemConfig.x - this.configItem.radius
 			if (this.configLine.width == 0) {

@@ -25,11 +25,12 @@
 												size="is-small"
 												multilined
 												always)
-											input(
+											input.id(
 												v-model="wbId"
 												placeholder="ID"
 												type="number"
-												@input='showHint')
+												@input='showHint'
+												@keyup='changeWidthId')
 								.level-right
 									.level-item
 										|от
@@ -70,7 +71,7 @@
 								tbody
 									tr
 										td.name Расход топлива
-										td {{ totalTrackFuel }}
+										td {{ waybill.trackFuelDown.toFixed(2) }}
 										td {{ totalWaybillFuel }}
 									tr
 										td.name Пробег
@@ -87,37 +88,13 @@
 									.tile.is-child
 										p.title АВТОГРАФ
 										.with-border
-											p Восточная,&nbsp; 
-											p Бажова,&nbsp;
-											p Шарташская,&nbsp;
-											p Луначарского,&nbsp;
-											p М-Сибиряка,&nbsp;
-											p Толмачева,&nbsp;
-											p Горького,&nbsp;
-											p Первомайская,&nbsp;
-											p К-Либкнехта,&nbsp;
-											p Дублер Сиб.Тракта,&nbsp;
-											p Тургенева,&nbsp;
-											p Ленина,&nbsp;
-											p Площаль УПИ,&nbsp;
-											p Серова&nbsp;
-									.tile.is-child
+											p(
+												v-if='trackLocations'
+												v-for='location in trackLocations')
+												|{{ location }},&nbsp;
+									.tile.is-child(v-if='wbLocations')
 										p.title Путевой лист
 										.with-border
-											p Восточная,&nbsp;
-											p Бажова,&nbsp;
-											p Шарташская,&nbsp;
-											p Луначарского,&nbsp;
-											p М-Сибиряка,&nbsp;
-											p Толмачева,&nbsp;
-											p Горького,&nbsp;
-											p Первомайская,&nbsp;
-											p К-Либкнехта,&nbsp;
-											p Дублер Сиб.Тракта,&nbsp;
-											p Тургенева,&nbsp;
-											p Ленина,&nbsp;
-											p Площаль УПИ,&nbsp;
-											p Блюхера&nbsp;
 
 							
 
@@ -156,6 +133,12 @@ export default {
 		chartData() {
 			return this.waybillReport ? this.waybillReport.track : null
 		},
+		trackLocations() {
+			return this.waybillReport ? this.waybillReport.trackLocations : null
+		},
+		wbLocations() {
+			return this.waybillReport && this.waybillReport.wbLocations ? this.waybillReport.wbLocations : null
+		},
 		dateStringOf() {
 			if (this.waybill) {
 				let date = new Date(this.waybill.of),
@@ -187,7 +170,18 @@ export default {
 			setTimeout(() => {
 				this.hint = true
 			}, 5000)
-		}
+		},
+		changeWidthId() {
+			if (this.wbId) {
+				if (this.wbId.length <= 5) {
+					let width = this.wbId.length * 30
+					document.querySelector(".id").style.width = `${width}px`
+				}
+				// this.milleageFinish = this.milleageFinish.toLocaleString()
+			} else {
+				document.querySelector(".id").style.width = `0px`
+			}
+		},
 	},
 	mounted() {
 		if (this.id) {

@@ -105,14 +105,14 @@ export default {
 			setFilter: 'setFilterType'
 		}),
 		setTo(e) {
-			this.setDateTo(e)
+			this.setDateTo(e.date)
 
 			setTimeout(() => {
 				this.getWaybills()
 			}, 50)
 		},
 		setFrom(e) {
-			this.setDateFrom(e)
+			this.setDateFrom(e.date)
 
 			setTimeout(() => {
 				this.getWaybills()
@@ -143,8 +143,8 @@ export default {
 
 		if (!this.waybillsSortData) {
 			this.isLoading = true
-			// this.getWaybills()
-			// 	.then(() => this.isLoading = false)
+			this.getWaybills()
+				.then(() => this.isLoading = false)
 		}
 	},
 	beforeMount() {

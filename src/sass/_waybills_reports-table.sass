@@ -37,6 +37,7 @@
 				width: 100%
 		.status
 			width: 11%
+			cursor: pointer
 			.dropdown
 				@include flex(flex-start, center)
 				position: relative
@@ -68,6 +69,15 @@
 							height: .75rem
 							margin-left: 1rem
 							border: 2px solid $graphite2
+						img
+							position: absolute
+							top: 0
+							bottom: 0
+							right: .08rem
+							width: .6rem
+							height: .6rem
+							margin: auto 0
+							display: none
 					input
 						visibility: hidden
 						position: absolute
@@ -81,8 +91,9 @@
 							&+label
 								color: $teal4
 						&:checked
-							&+label::after
-								background: center / contain no-repeat url('/icons/check.svg')
+							&+label
+								img
+									display: block
 		thead
 			background: $grey2
 			box-shadow: 0 1px 0 $grey2

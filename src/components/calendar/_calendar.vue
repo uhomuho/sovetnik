@@ -130,7 +130,7 @@ export default {
 				selectedMinutes: this.date ? this.date.getMinutes() : null
 			},
 
-			selectedMonth: this.date ? `${this.date.getMonth()}`.length == 1 ? `0${this.date.getMonth() + 1}` : `${this.date.getMonth()}` : null,
+			selectedMonth: this.date ? `${this.date.getMonth() + 1}`.length == 1 ? `0${this.date.getMonth() + 1}` : `${this.date.getMonth() + 1}` : null,
 			selectedYear: this.date ? this.date.getFullYear() : null,
 
 			currentDay:	new Date().getDate(),

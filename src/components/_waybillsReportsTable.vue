@@ -65,6 +65,7 @@
 												@input='setStatus')
 											label.checkbox(:for='status.id')
 												|{{ status.text }}
+												img(:src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/check.svg`')
 				tbody(
 					v-if='waybills && waybills.length !== 0')
 					tr(
@@ -114,6 +115,7 @@ export default {
 	name: 'waybillsReportsTable',
 	data() {
 		return {
+			mode: process.env.NODE_ENV,
 			openedDropdown: false,
 			openedCarDropdown: false,
 			choosenCar: null,

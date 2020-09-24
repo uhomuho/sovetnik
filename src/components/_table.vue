@@ -65,8 +65,10 @@
 													:value='status.name'
 													v-model='filter.status',
 													@input='setStatus')
-												label.checkbox(:for='status.id')
+												label.checkbox(
+													:for='status.id')
 													|{{ status.text }}
+													img(:src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/check.svg`')
 
 					tbody(
 						v-if='waybills.listWaybill.length !== 0'
@@ -94,12 +96,12 @@
 							td.status(
 								:class='waybill.status.class') 
 								|{{ waybill.status.text }}
-								router-link(
+								div(
 									v-if='waybill.status.name == "CLOSE"'
 									:to='`/reports/waybill/${waybill.id}`')
 									img.icon(
 										src="@/assets/icons/waybill-report.svg")
-								router-link(
+								div(
 									v-if='waybill.status.name == "OPEN"'
 									:to='`/waybills/close/${waybill.id}`')
 									img.icon(
@@ -139,6 +141,7 @@ export default {
 	name: 'Table',
 	data() {
 		return {
+			mode: process.env.NODE_ENV,
 			currentPage: 1,
 			filter: {
 				status: [],
