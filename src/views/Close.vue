@@ -191,8 +191,8 @@ export default {
 			closeWaybill: 'getCloseWaybill'
 		}),
 		waybill() {
-			if (this.closeWaybill && this.closeWaybill.waybill) {
-				return this.closeWaybill.waybill
+			if (this.closeWaybill) {
+				return this.closeWaybill
 			}
 			return null
 		},
