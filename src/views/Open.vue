@@ -277,17 +277,17 @@ export default {
 		async filterDriver(e) {
 			this.setDriverName(e.target.value)
 			await api.getDrivers(e.target.value)
-				.then(r => this.drivers = r.data)
+				.then(r => this.drivers = r.data.listDrivers)
 		},
 		async filterPlates(e) {
 			this.setPlate(e)
 			await api.getPlates(e.target.value)
-				.then(r => this.plates = r.data)
+				.then(r => this.plates = r.data.listCar)
 		},
 		async getLastWb(serial) {
 			await api.getLastWb({serial: serial})
 				.then(r => {
-					this.lastWb = r.data
+					this.lastWb = r.data.waybill
 					if (this.lastWb) {
 						this.waybill.mileageStart = this.lastWb.mileageFinish
 						this.waybill.fuelStart = this.lastWb.fuelFinish
@@ -337,7 +337,6 @@ export default {
 					let width = this.waybill.id.length * 30
 					document.querySelector(".id").style.width = `${width}px`
 				}
-				// this.milleageFinish = this.milleageFinish.toLocaleString()
 			} else {
 				document.querySelector(".id").style.width = `0px`
 			}

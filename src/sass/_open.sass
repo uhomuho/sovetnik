@@ -27,10 +27,10 @@
 						&.id
 							min-width: 6rem
 							width: 6rem
+							-moz-appearance:textfield
 							&::-webkit-outer-spin-button,
 							&::-webkit-inner-spin-button
 								-webkit-appearance: none
-								margin: 0
 
 					span.date-of
 						font-size: 3rem
@@ -115,9 +115,18 @@
 								align-items: flex-start
 								justify-content: flex-start
 								padding: .3rem .5rem
+								max-height: 15rem
+								overflow: scroll
+								-ms-overflow-style: none
+								scrollbar-width: none
+								
+								&::-webkit-scrollbar
+									display: none
 								p
+									font-size: 1.125rem
 									color: $blue4
 									padding: .3rem
+									cursor: pointer
 						
 							&.plate
 								position: relative

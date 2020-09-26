@@ -40,19 +40,23 @@
 				.wrapper(v-if='waybill')
 					.item
 						p Гос. номер:
-						input.input( 
-							type="text"
-							v-model='waybill.car.registrationPlate')
-						.search.is-hidden
+						.plate(
+							:class='plates ? "is-active" : null')
+							input.input(
+								type="text"
+								@input='filterPlates'
+								v-model='waybill.car.registrationPlate')
+							img.icon( src="@/assets/icons/angle-4.svg" )
+						.plates.dropdown( v-if='plates' )
+							p( 
+								v-for='plate in plates'
+								@click='getWb(plate)')
+								|{{ plate.registrationPlate }}
 
 					.item
 						p Водитель: {{ waybill.driver.name }}
 
 				hr(v-if='waybill')
-
-				//- img( 
-				//- 	:src='`${mode == "development" ? "/" : $userConfig.publicPath}img/canvas.png`'
-				//- 	v-if='waybill')
 				Chart(
 					v-if='waybillReport'
 					:items='chartData',
@@ -104,6 +108,7 @@
 import { mapActions, mapGetters } from 'vuex'
 import monthName from '@/month'
 import Chart from '@/components/canvas/_wb-chart'
+import api from '@/api/apiActions'
 
 export default {
 	name: 'Report',
@@ -112,7 +117,8 @@ export default {
 			wbId: this.id ? this.id : null,
 			registrationPlate: this.waybill ? this.waybill.car.registrationPlate : null,
 			hint: false,
-			mode: process.env.NODE_ENV
+			mode: process.env.NODE_ENV,
+			plates: null
 		}
 	},
 	components: {
@@ -121,6 +127,11 @@ export default {
 	props: {
 		id: {
 			default: null
+		}
+	},
+	watch: {
+		waybillReport() {
+			this.wbId = this.waybill.id
 		}
 	},
 	computed: {
@@ -182,6 +193,10 @@ export default {
 				document.querySelector(".id").style.width = `0px`
 			}
 		},
+		async filterPlates(e) {
+			await api.getPlates(e.target.value)
+				.then(r => this.plates = r.data.listCar)
+		}
 	},
 	mounted() {
 		if (this.id) {

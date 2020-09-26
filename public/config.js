@@ -8,37 +8,37 @@ module.exports = {
 	/*---------------------------------------------------------*/
 	/* Пути для бэкенда */
 	// Путевые листы за период 
-	waybill: "waybill",
+	waybill: "waybill.json",
 
 	// Получение путевого листа на открытие 
-	getWaybillOpen: "waybill/open",
+	getWaybillOpen: "waybill/open.json",
 
 	// Открытие путевого листа 
-	setWaybillOpen: "waybill/open",
+	setWaybillOpen: "waybill/open.json",
 
 	// Поиск водителя
-	drivers: "drivers",
+	drivers: "drivers.json",
 
 	// Поиск автомобиля 
-	car: "car",
+	car: "car.json",
 
 	// Получение последнего путевого листа
-	waybillLast: "waybill/last",
+	waybillLast: "waybill/last.json",
 
 	// Получение путевого листа на закрытие 
-	getWaybillClose: "waybill/close",
+	getWaybillClose: "waybill/close.json",
 
 	// Закрытие путевого листа 
-	setWaybillClose: "waybill/close",
+	setWaybillClose: "waybill/close.json",
 
 	// Отчёт по автографу 
-	reportTrack: "report/track",
+	reportTrack: "report/track.json",
 
 	// Отчёт по путевому листу 
-	reportWaybill: "report/waybill",
+	reportWaybill: "report/waybill.json",
 
 	// Список автомобилей для фильтра путевых листов 
-	carGroups: "car-groups",
+	carGroups: "car-groups.json",
 
 	/*---------------------------------------------------------*/
 	/* Глобальные переменные */

@@ -58,13 +58,15 @@
 					v-text(
 						v-if='configPopUp.show'
 						:config=`{
-							x: configPopUp.x + configPopUp.width - 90,
+							x: configPopUp.x + configPopUp.width - 100,
 							y: configPopUp.y + 99,
 							text: configPopUp.fuelDown,
 							fontFamily: "Montserrat",
 							textAlign: "right",
 							fill: "#617E8C",
-							fontSize: 24
+							fontSize: 24,
+							width: 70,
+							align: "right"
 						}`)
 					v-text(
 						v-if='configPopUp.show'
@@ -90,13 +92,15 @@
 					v-text(
 						v-if='configPopUp.show'
 						:config=`{
-							x: configPopUp.x + configPopUp.width - 90,
+							x: configPopUp.x + configPopUp.width - 100,
 							y: configPopUp.y + 125,
 							text: configPopUp.totalDistance,
 							fontFamily: "Montserrat",
 							textAlign: "right",
 							fill: "#617E8C",
-							fontSize: 24
+							fontSize: 24,
+							width: 70,
+							align: "right"
 						}`)
 					v-text(
 						v-if='configPopUp.show'
@@ -334,7 +338,23 @@ export default {
 				this.configLine.width = 0
 			}
 
-			this.bg = false
+			this.configBg.y = null
+			this.configBg.height = null
+
+			this.configPopUp.show = null
+			this.configPopUp.fuelDown = null
+			this.configPopUp.totalDistance = null
+			this.configPopUp.totalTime = null
+			this.configPopUp.width = null
+			this.configPopUp.height = null
+			this.configPopUp.x = null
+			this.configPopUp.y = null
+
+			this.configPopUpTitle.show = null
+			this.configPopUpTitle.width = null
+			this.configPopUpTitle.x = null
+			this.configPopUpTitle.y = null
+			this.configPopUpTitle.text = null
 		},
 	}
 }
