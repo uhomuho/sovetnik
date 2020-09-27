@@ -1,8 +1,16 @@
 <template lang="pug">
 	#app
-		//- Header(:breadcrumbs='breadcrumbs')
+		Header( 
+			:show='show'
+			@show='showNav'
+			@hide='hideNav'
+			:login='isLogin')
 		.hero
-			Sidebar(:routes='routes')
+			Sidebar(
+				v-if='!isLogin'
+				:routes='routes'
+				@show='showNav'
+				@hide='hideNav')
 			router-view#main
 		.modal.is-active#error(v-if='timezoneError')
 			.modal-background
@@ -16,12 +24,14 @@
 
 <script>
 import Sidebar from '@/components/_sidebar'
+import Header from '@/components/_header'
 import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'App',
   components: {
-		Sidebar
+		Sidebar,
+		Header
 	},
 	data() {
 		return {
@@ -35,7 +45,9 @@ export default {
 					action: "Повторите ввод и обновите страницу",
 					file: "config.js"
 				}
-			}
+			},
+			show: false,
+			isLogin: false
 		}
 	},
 	computed: {
@@ -54,7 +66,22 @@ export default {
 		]),
 		...mapActions('reports', {
 			setRepDates: 'setDates'
-		})
+		}),
+		showNav(e) {
+			this.show = e.show
+		},
+		hideNav(e) {
+			this.show = e.show
+		}
+	},
+	watch: {
+		$route() {
+			if (this.$router.currentRoute.name == 'Login' || this.$router.currentRoute.name == 'Register') {
+				this.isLogin = true
+			} else {
+				this.isLogin = false
+			}
+		}
 	},
 	beforeMount() {
 		const timezoneCheck = /^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$/
@@ -68,6 +95,11 @@ export default {
 		}
 		if (!this.repDateFrom || !this.repDateTo) {
 			this.setRepDates()
+		}
+		if (this.$router.currentRoute.name == 'Login' || this.$router.currentRoute.name == 'Register' || this.$router.currentRoute.name == 'Reset') {
+			this.isLogin = true
+		} else {
+			this.isLogin = false
 		}
 	}
 }

@@ -6,6 +6,7 @@ Vue.use(Router)
 // Components
 // -> Login/Register
 import Login from '@/views/Login'
+import Register from '@/views/Register'
 
 // -> Waybills
 import Waybills from '@/views/Waybills'
@@ -27,13 +28,15 @@ export default new Router({
 	routes: [
 		{
 			path: '/',
-			name: 'Главная',
+			name: 'Login',
 			component: Login,
-			hidden: true,
-			meta: {
-				
-			},
-			redirect: '/waybills',
+			hidden: true
+		},
+		{
+			path: '/register',
+			name: 'Register',
+			component: Register,
+			hidden: true
 		},
 		{
 			path: '/waybills',

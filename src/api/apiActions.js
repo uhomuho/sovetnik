@@ -3,6 +3,10 @@ import api from '@/api'
 import config from '../../public/config.js'
 
 export default {
+	login(params) {
+		console.log(params)
+		return api().post('/login', params)
+	},
 	getWaybills(params) {
 		let method 	= config.waybill
 		return api().get(`${method}

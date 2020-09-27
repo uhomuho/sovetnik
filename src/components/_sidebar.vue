@@ -1,7 +1,8 @@
 <template lang="pug">
 	#aside
-		.aside-item.main-item
+		.aside-item.main-item( @mousemove='showNav' @mouseout='hideNav' )
 			img( src="@/assets/icons/logo.svg" )
+			.menu
 		.items(
 			v-for='(route, key) in routes'
 			:key='key'
@@ -36,6 +37,18 @@ export default {
 	data() {
 		return {
 			mode: process.env.NODE_ENV
+		}
+	},
+	methods: {
+		showNav() {
+			this.$emit('show', {
+				show: true
+			})
+		},
+		hideNav() {
+			this.$emit('hide', {
+				show: false
+			})
 		}
 	}
 }

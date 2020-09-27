@@ -285,7 +285,7 @@ div
 													p двигателя
 								tr
 									td
-										table.table.is-fullwidth
+										table.table.is-fullwidth.need-border
 											tr
 												td.other
 													table.table.is-fullwidth
@@ -463,28 +463,28 @@ export default {
 			return new Date(this.waybill.of).getFullYear()
 		},
 		startDate() {
-			return new Date(this.waybill.startPlan).getDate()
+			return this.validateData(new Date(this.waybill.startPlan).getDate())
 		},
 		startMonth() {
-			return monthName.num[new Date(this.waybill.startPlan).getMonth()]
+			return this.validateData(monthName.num[new Date(this.waybill.startPlan).getMonth()])
 		},
 		startHours() {
-			return new Date(this.waybill.startPlan).getHours()
+			return this.validateData(new Date(this.waybill.startPlan).getHours())
 		},
 		startMinutes() {
-			return new Date(this.waybill.startPlan).getMinutes()
+			return this.validateData(new Date(this.waybill.startPlan).getMinutes())
 		},
 		finishDate() {
-			return new Date(this.waybill.finishPlan).getDate()
+			return this.validateData(new Date(this.waybill.finishPlan).getDate())
 		},
 		finishMonth() {
-			return monthName.num[new Date(this.waybill.finishPlan).getMonth()]
+			return this.validateData(monthName.num[new Date(this.waybill.finishPlan).getMonth()])
 		},
 		finishHours() {
-			return new Date(this.waybill.finishPlan).getHours()
+			return this.validateData(new Date(this.waybill.finishPlan).getHours())
 		},
 		finishMinutes() {
-			return new Date(this.waybill.finishPlan).getMinutes()
+			return this.validateData(new Date(this.waybill.finishPlan).getMinutes())
 		}
 	},
 	methods: {
@@ -498,6 +498,9 @@ export default {
 			setTask: 'setNewWbTask',
 			setFuelStart: 'setNewWbFuelStart'
 		}),
+		validateData(data) {
+			return `${data}`.length == 1 ? `0${data}` : data
+		},
 		setDay(e) {
 			if(!(e.target.value > 31)) {
 				this.setOf(new Date(`${this.yearOf}-${this.monthOfNum}-${e.target.value}`).getTime())
@@ -827,6 +830,7 @@ export default {
 						vertical-align: middle
 						padding-top: .3rem
 						padding-bottom: .3rem 
+						height: 100%
 						input
 							color: $blue4
 							border-bottom: unset
@@ -878,6 +882,8 @@ export default {
 										text-align: center
 			
 			.table.second
+				.need-border
+					border-top: 1px solid #dbdbdb
 				input
 					border-bottom: 0
 					width: 80%

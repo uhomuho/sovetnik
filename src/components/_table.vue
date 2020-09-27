@@ -83,14 +83,14 @@
 										td.is-lowercase {{ waybill.car.registrationPlate }}
 							td.start 
 								|{{ waybill.startFact ? dateTimeStamp(waybill.startFact) : null }}
-								span.icon.is-small(v-if='waybill.startPlan && waybill.startFact')
-									i.far.fa-calendar-check(
-										:class='waybill.startPlan == waybill.startFact ? "is-success" : "is-danger"')
+								img.icon(
+									v-if='waybill.startPlan && waybill.startFact'
+									:src='`img/check_${waybill.startPlan == waybill.startFact ? "true" : "false"}.svg`')
 							td.finish
 								|{{ waybill.finishPlan ? dateTimeStamp(waybill.finishPlan) : null }}
-								span.icon.is-small(v-if='waybill.finishPlan && waybill.finishFact')
-									i.far.fa-calendar-check(
-										:class='waybill.finishPlan == waybill.finishFact ? "is-success" : "is-danger"')
+								img.icon(
+									v-if='waybill.finishPlan && waybill.finishFact'
+									:src='`img/check_${waybill.finishPlan == waybill.finishFact ? "true" : "false"}.svg`')
 							td.task {{ waybill.workText.length <= 40 ? waybill.workText : `${waybill.workText.slice(0, -(waybill.workText.length - 40))}...` }}
 							td.driver {{ waybill.driver.name }}
 							td.status(
