@@ -71,8 +71,8 @@
 													img(:src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/check.svg`')
 
 					tbody(
-						v-if='waybills.listWaybill.length !== 0'
-						v-for='waybill in waybills.listWaybill')
+						v-if='waybills.length !== 0'
+						v-for='waybill in waybills')
 						tr(@click='waybill.status.name == "CLOSE" ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.name == "OPEN" ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
 								:class='waybill.status.class') {{ waybill.id }}
@@ -108,7 +108,7 @@
 										src="@/assets/icons/close-waybill.svg")
 			b-loading(
 				v-model='loading')
-			.container(v-if='waybills.listWaybill.length == 0')
+			.container(v-if='waybills.length == 0')
 				.content
 					span.subtitle.has-text-warning Нет путевых листов по заданным параметрам
 			router-link.open(
@@ -118,7 +118,7 @@
 			nav.pagination(
 				role="navigation"
 				aria-label="pagination"
-				v-if='waybills.listWaybill.length !== 0')
+				v-if='waybills.length !== 0')
 				p {{ waybillsOnPage }}/{{ waybills.count }}
 				.button.prev( 
 					@click='prevPage'
