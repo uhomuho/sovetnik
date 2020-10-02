@@ -11,6 +11,7 @@
 				v-for='(item, key) in route.children'
 				:key='key'
 				v-if='!item.hidden'
+				:class='item.name == curRoute ? "router-link-exact-active" : ""'
 				:to='item.path ? `${route.path}/${item.path}` : route.path')
 					img( :src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/${item.menuIcon}.svg`' )
 					|{{item.menuName}}
@@ -36,7 +37,13 @@ export default {
 	props: ['routes'],
 	data() {
 		return {
-			mode: process.env.NODE_ENV
+			mode: process.env.NODE_ENV,
+			curRoute: this.$router.currentRoute.name
+		}
+	},
+	watch: {
+		$route() {
+			this.curRoute = this.$router.currentRoute.name
 		}
 	},
 	methods: {
@@ -50,7 +57,7 @@ export default {
 				show: false
 			})
 		}
-	}
+	},
 }
 
 </script>

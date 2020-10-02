@@ -9,15 +9,15 @@ export default () => {
 	const url = config.backendUrl,
 				dev = process.env.NODE_ENV == 'development' ? true : false,
 				axiosInstance = axios.create({
-					baseURL: `${dev ? 'https://uhomuhoproxy.herokuapp.com/'+url : '/api/'}`
+					baseURL: `${dev ? 'https://uhomuhoproxy.herokuapp.com/'+url+'api/' : '/api/'}`
 				}),
 				isHandlerEnabled = (config = {}) => !config.handlerEnabled,
 				errorHandler = error => {
 					if (isHandlerEnabled(error.config) && dev) {
 						Toast.open({
-							message: 'Ошибка при получении данных!',
+							message: `${error.response.statusText}, with status ${error.response.status}`,
 							type: 'is-danger',
-							position: 'is-bottom-right',
+							position: 'is-top-right',
 							queue: false
 						})
 					}

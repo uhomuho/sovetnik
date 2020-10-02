@@ -3,8 +3,10 @@ import api from '@/api'
 import config from '../../public/config.js'
 
 export default {
+	download(id) {
+		return api().get(`/waybill/print?id=${id}`)
+	},
 	login(params) {
-		console.log(params)
 		return api().post('/login', params)
 	},
 	getWaybills(params) {

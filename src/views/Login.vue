@@ -23,6 +23,7 @@
 								input.input(
 									v-model='formData.username'
 									placeholder="Логин")
+							p.help.is-danger(v-if='errors.username') Заполните поле!
 						.field
 							.control
 								img( src="@/assets/icons/password.svg" )
@@ -30,6 +31,7 @@
 									v-model='formData.password'
 									type="password"
 									placeholder="Пароль")
+							p.help.is-danger(v-if='errors.password') Заполните поле!
 						.field.bottom
 							.control
 								router-link( to="/reset" ) Забыли пароль?
@@ -40,12 +42,14 @@
 								hr
 						.field.reg
 							.control
-								router-link.button( to='/register' ) Регистрация 
+								router-link.button( to='/register' ) Регистрация
 
 </template>
 
 <script>
-// import api from '@/api/apiActions'
+import api from '@/api/apiActions'
+import { SnackbarProgrammatic as Snackbar } from 'buefy'
+import CryptoJS from 'crypto-js'
 
 export default {
 	name: 'Login',
@@ -55,19 +59,53 @@ export default {
 			formData: {
 				username: null,
 				password: null
+			},
+			errors: {
+				username: false,
+				password: false
 			}
 		}
 	},
+	props: ['user'],
 	methods: {
 		login() {
-			this.$router.push('/waybills')
-			// let form = document.getElementById('form'),
-			// let data = `username=${this.formData.username}&password=${this.formData.password}`
-			// data.append('username', this.formData.login)
-			// data.append('password', this.formData.password)
+			if (!this.formData.username)
+				this.errors.username = true
+			else
+				this.errors.username = false
 
-			// api.login(data)
-			// 	.then(r => console.log(r))
+			if (!this.formData.password)
+				this.errors.password = true
+			else
+				this.errors.password = false
+
+			if (this.errors.username || this.errors.password)	
+				return false
+
+			api.login(this.formData)
+				.then(r => {
+					let data = r.data
+					if ( data.status ) {
+						let user = data
+						let userData = JSON.stringify(user)
+						userData = CryptoJS.AES.encrypt(userData, 'kFLeCZ19095').toString()
+						localStorage.user = userData
+
+						this.$router.push('/waybills')
+					} else {
+						if ( !data.status && data.error === "Bad Credentials" ) {
+							return Snackbar.open({
+								message: 'Логин или пароль введён неверно!',
+								type: 'is-warning'
+							})
+						} else {
+							return Snackbar.open({
+								message: 'Неизвестная ошибка!',
+								type: 'is-danger'
+							})
+						}
+					}
+				})
 		}
 	}
 }
@@ -102,10 +140,15 @@ export default {
 							top: 6rem
 							right: 20%
 						.field
+							position: relative
 							&+.field
 								margin-top: 2rem
 							.control
 								position: relative
+								&+.help
+									position: absolute
+									top: 102%
+									left: 1.5rem
 								img
 									position: absolute
 									top: 0

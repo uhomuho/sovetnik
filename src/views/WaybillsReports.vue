@@ -35,32 +35,28 @@
 										:class='filterType == "range" ? "active" : null') период
 						.level-item
 							.wrapper.from(
-								@click='openFrom')
+								@click='openCalendar')
 								p {{ stringFrom }}
 								Calendar(
-									:class='showFrom ? null : "is-hidden"'
-									@select='setFrom'
-									:time='false',
-									:date='dateFrom')
+									v-if='!invalidDate(dateFrom) && !invalidDate(dateTo)'
+									:class='showCalendar ? null : "is-hidden"'
+									@dateTo='setTo'
+									@dateFrom='setFrom'
+									:firstDate='dateFrom'
+									:lastDate='dateTo')
 							.wrapper.to(
-								@click='openTo')
+								@click='openCalendar')
 								p {{ stringTo }}
-								Calendar(
-									:class='showTo ? null : "is-hidden"'
-									@select='setTo'
-									:time='false',
-									:date='dateTo')
 
 				hr
 				Table(
-					v-if='waybills'
-					:waybills='waybills.listWaybill')
+					:waybills='waybills ? waybills.listWaybill : null')
 </template>
 
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 import Table from '@/components/_waybillsReportsTable'
-import Calendar from '@/components/calendar/_calendar.vue'
+import Calendar from '@/components/calendar/_calendar-range.vue'
 import monthName from '@/month'
 
 export default {
@@ -72,8 +68,7 @@ export default {
 	data() {
 		return {
 			isLoading: false,
-			showTo: false,
-			showFrom: false
+			showCalendar: false
 		}
 	},
 	computed: {
@@ -118,33 +113,25 @@ export default {
 				this.getWaybills()
 			}, 50)
 		},
-		openTo(e) {
-			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
-				this.showTo = !this.showTo
-			}
-		},
-		openFrom(e) {
-			if(e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
-				this.showFrom = !this.showFrom
+		openCalendar(e) {
+			if(e.target.matches('.wrapper.to *') || e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+				console.log('xex')
+				this.showCalendar = !this.showCalendar
 			}
 		},
 		close(e) {
 			if(!e.target.matches('.calendar *, .wrapper.to *, .wrapper.from *')) {
-				if (this.showTo) {
-					this.showTo = false
-				}
-				if (this.showFrom) {
-					this.showFrom = false
+				if (this.showCalendar) {
+					this.showCalendar = false
 				}
 			}
-		}
-	},
-	mounted() {
-
-		if (!this.waybillsSortData) {
-			this.isLoading = true
-			this.getWaybills()
-				.then(() => this.isLoading = false)
+		},
+		invalidDate(date) {
+			if (date == "Invalid Date") {
+				return true
+			} else {
+				return false
+			}
 		}
 	},
 	beforeMount() {
@@ -218,11 +205,13 @@ export default {
 								&.active
 									color: $orange4
 
-						
+						.wrapper.to
+							z-index: 101
+
 						.wrapper.to,
 						.wrapper.from
 							text-align: left
-							width: 100%
+							width: 206px
 							padding: .8rem 1.25rem
 							border: 1px dashed #D0D9DE
 							border-bottom: unset
@@ -235,8 +224,10 @@ export default {
 								font-weight: 500
 								color: $graphite4
 
-							.calendar
+							.calendar.range
 								position: absolute
 								top: 100%
-								z-index: 99
+								left: unset!important
+								right: 0
+								z-index: 100
 </style>

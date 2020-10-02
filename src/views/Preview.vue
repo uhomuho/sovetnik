@@ -15,22 +15,25 @@ div
 					p.title ПУТЕВОЙ ЛИСТ
 					.num.flex-input
 						p грузового автомобиля
-						input
+						input()
 						p.has-text-weight-bold №
 						input(
 							:value='waybill.id'
-							@input='setId')
+							@input='setId'
+							)
 					.date.flex-input
 						input(
 							type='number'
 							:value='dayOf'
-							@input='setDay')
+							@input='setDay'
+							)
 						.month
 							p.is-lowercase(
 								@click='toggleMonthSelector') 
 								|{{ monthOf }}
 
 							.month-selector.dropdown(
+								v-if='false'
 								:class='showMonthSelector ? "" : "is-hidden"')
 								p(
 									v-for='month in monthList'
@@ -42,7 +45,8 @@ div
 						input(
 							type='number'
 							:value='yearOf'
-							@input='setYear')
+							@input='setYear'
+							)
 						p года
 				.organisation.flex-input
 					p Организация
@@ -53,30 +57,43 @@ div
 						.tile.is-child
 							.model.flex-input
 								p Марка автомобиля
-								p.info {{ waybill.car.model }}
+								p.info.is-capitalized {{ waybill.car.model }}
 							.plate.flex-input
 								p Государственный номерной знак
-								input(
-									:value='waybill.car.registrationPlate'
-									@input='getSerial')
+								.input-container
+									input#car.is-lowercase(
+										@input='getSerial'
+										:disabled='waybill.car && waybill.car.registrationPlate ? true : false')
+									.tag.is-lowercase(
+										v-if='waybill.car && waybill.car.registrationPlate'
+										@click='setRegistrationPlate({serial: null, registrationPlate: null}); setNull("#car")')
+										|{{ waybill.car ? waybill.car.registrationPlate : "" }}
+										img.delete( src="@/assets/icons/delete.svg" )
 
 								.plates.dropdown(v-if='plates')
 									p(
 										v-for='plate in plates'
 										@click='setCar(plate), plates = null'
-										:class='plate.serial == waybill.car.serial ? "selected" : null') 
+										:class='waybill.car && plate.serial == waybill.car.serial ? "selected" : null') 
 										|{{ plate.registrationPlate }}
 							.driver.flex-input
 								p Водитель
-								input(
-									:value='waybill.driver.name'
-									@input='getDriver')
+								.input-container
+									input#driver(
+										@input='getDriver'
+										:disabled='waybill.driver && waybill.driver.name ? true : false'
+									)
+									.tag(	
+										v-if='waybill.driver && waybill.driver.name'
+										@click='setDriver(null), setNull("#driver")')
+										|{{ waybill.driver ? waybill.driver.name : "" }}
+										img.delete( src="@/assets/icons/delete.svg" )
 
 								.drivers.dropdown(v-if='drivers')
 									p(
 										v-for='driver in drivers'
 										@click='setDriver(driver), drivers = null'
-										:class='driver.id == waybill.driver.id ? "selected" : null')
+										:class='waybill.driver && driver.id == waybill.driver.id ? "selected" : null')
 										|{{ driver.name }}
 							.ticket.flex-input
 								p Удостоверение №
@@ -135,7 +152,8 @@ div
 									td
 										input(
 											:value='waybill.workText'
-											@input='setTask')
+											@input='setTask'
+											)
 									td
 									td
 								tr
@@ -213,7 +231,8 @@ div
 									td
 									td 
 										input(
-											:value='waybill.mileageStart')
+											:value='waybill.mileageStart'
+											)
 									td
 								tr
 									td возвращение в гараж
@@ -290,7 +309,7 @@ div
 												td.other
 													table.table.is-fullwidth
 														tr
-															td 
+															td.has-text-weight-bold {{ waybill.car ? waybill.car.fuelType : "" }}
 															td
 												td.given
 												td.remain
@@ -299,7 +318,8 @@ div
 															td 
 																input(
 																	:value='waybill.fuelStart'
-																	@input='setFuelStart')
+																	@input='setFuelStart'
+																	)
 															td
 												td.passoff
 												td.factor
@@ -361,7 +381,7 @@ div
 
 							.take-driver.flex-input
 								p Автомобиль принял. Водитель
-								p.info.is-capitalized {{ waybill.driver.name }}
+								p.info.is-capitalized {{ waybill.driver ? waybill.driver.name : "" }}
 
 							.well.flex-input
 								p При возвращении автомобиль 
@@ -369,19 +389,26 @@ div
 							
 							.wb-footer.flex-input
 								p Сдал водитель
-								p.info.is-capitalized {{ waybill.driver.name }}
+								p.info.is-capitalized {{ waybill.driver ? waybill.driver.name : "" }}
 								p Принял механик
 								p.info
 
-			.button.is-pulled-right(@click='open')
+			.button.is-pulled-right(
+				@click='open'
+				v-if='!opened')
 				|Создать
+			.button.is-pulled-right(
+				style="margin-right: 2rem"
+				@click='print'
+				v-if='opened')
+				|Печать
 
 </template>
 
 <script>
 import { mapMutations, mapState } from 'vuex'
 import monthName from '@/month'
-import { SnackbarProgrammatic as Snackbar, SnackbarProgrammatic } from 'buefy'
+import { SnackbarProgrammatic as Snackbar } from 'buefy'
 import api from '@/api/apiActions'
 
 export default {
@@ -443,7 +470,8 @@ export default {
 			],
 			errors: {
 				dateErr: true
-			}
+			},
+			opened: false
 		}
 	},
 	computed: {
@@ -501,6 +529,11 @@ export default {
 		validateData(data) {
 			return `${data}`.length == 1 ? `0${data}` : data
 		},
+		setRegistrationPlate(obj) {
+			this.registrationPlate = obj.registrationPlate
+			this.waybill.serial = obj.serial
+			this.waybill.car = obj
+		},
 		setDay(e) {
 			if(!(e.target.value > 31)) {
 				this.setOf(new Date(`${this.yearOf}-${this.monthOfNum}-${e.target.value}`).getTime())
@@ -527,14 +560,13 @@ export default {
 		},
 		getSerial(e) {
 			let key = e.target.value
-			this.setPlate(e)
 			if (key.length !== 0) {
 				api.getPlates(key)
 					.then(r => {
-						if (r.data.listCar.length == 0) {
+						if (r.data.length == 0) {
 							this.plates = null
 						} else {
-							this.plates = r.data.listCar
+							this.plates = r.data
 						}
 					})
 			} else {
@@ -543,29 +575,68 @@ export default {
 		},
 		getDriver(e) {
 			let key = e.target.value
-			this.setDriverName(key)
 			if (key.length !== 0) {
 				api.getDrivers(key)
 					.then(r => {
-						if (r.data.listDrivers.length == 0) {
+						if (r.data.length == 0) {
 							this.drivers = null
 						} else {
-							this.drivers = r.data.listDrivers
+							this.drivers = r.data
 						}
 					})
 			}
 		},
 		open() {
-			api.createWaybill(this.waybill)
-				.then(r => {
-					SnackbarProgrammatic.open({
-						message: r.data.message
+			if (!this.opened) {
+				api.createWaybill(this.waybill)
+					.then(r => {
+						if (r.data.message) {
+							Snackbar.open({
+								message: `${r.data.message} №${this.waybill.id}`,
+								duration: 2000,
+								position: 'is-top-right',
+								actionText: null
+							})
+							localStorage.setItem('newWaybill', null)
+							localStorage.lastWb = null
+							this.opened = true
+						} else if (r.data.error) {
+							Snackbar.open({
+								message: r.data.error,
+								duration: 1500,
+								position: 'is-top-right',
+								actionText: null
+							})
+						}
 					})
-					console.log(r)
+					.catch(err => {
+						console.error(err)
+					})
+			} else {
+				Snackbar.open({
+					message: 'Путевой лист уже открыт!',
+					duration: 1500,
+					position: 'is-top-right',
+					type: 'is-danger',
+					actionText: null
 				})
-				.catch(err => {
-					console.log(err)
+			}
+		},
+		setNull(id) {
+			document.querySelector(id).value = ""
+		},
+		print() {
+			api.download(this.waybill.id)
+				.then(res => {
+					let url = res.request.responseURL
+					window.open(url, '_blank')
 				})
+				.catch(err => console.log(err))
+		},
+		mounted() {
+			if (!this.waybill) {
+				this.$router.push('/waybills/open')
+			}
 		},
 		close(e) {
 			if(!e.target.matches('.month-selector *, .month *')) {
@@ -585,10 +656,16 @@ export default {
 
 <style lang="sass" scoped>
 
+#preview.container
+	.section
+		padding: 
+			right: 6rem
+			left: 6rem
+
 #wb
 	padding: 2.5rem 2rem
 	margin: 0 -3rem
-	border: 1px solid #B0BFC6
+	border: 1px solid #B0BFC6 
 	*
 		position: relative
 		z-index: 1
@@ -614,8 +691,13 @@ export default {
 		border: none
 		border-bottom: 1px solid $graphite2
 		box-shadow: none
+		&:-internal-autofill-selected
+			background-color: transparent!important
 		&:focus
 			outline: none
+		// &:
+		// 	color: $graphite6!important
+		// 	background-color: #fff	
 	.flex-input
 		display: flex
 		justify-content: flex-start
@@ -628,6 +710,7 @@ export default {
 		padding: .3rem 1rem .8rem
 		background-color: #fff
 		width: fit-content
+		max-height: 15rem
 		display: flex
 		flex-direction: column
 		align-items: flex-start
@@ -638,6 +721,12 @@ export default {
 		left: 0
 		right: 0
 		z-index: 99
+		overflow: scroll
+		-ms-overflow-style: none
+		scrollbar-width: none
+		
+		&::-webkit-scrollbar
+			display: none
 		p
 			cursor: pointer
 		p.selected
@@ -663,7 +752,8 @@ export default {
 					font-size: .75rem
 					font-weight: bold
 					text-align: center
-					color: $blue4
+					// color: $blue4
+					color: $graphite6
 					width: 8.6rem
 					margin-right: 1rem
 					border-bottom: 1px solid $graphite2
@@ -691,6 +781,7 @@ export default {
 	.organisation
 		margin-bottom: 1.25rem
 		p.info
+			text-transform: unset
 			width: 45rem
 	.tile.is-child
 		display: flex
@@ -713,13 +804,55 @@ export default {
 				z-index: 99
 				input
 					width: 12.3rem
+				.tag
+					font-size: .625rem
+					font-weight: bold
+					display: flex
+					align-items: center
+					justify-content: flex-start
+					position: absolute
+					bottom: .3rem
+					left: .2rem
+					cursor: pointer
+					&:hover
+						.delete
+							display: block
+					.delete
+						display: none
+						min-width: 15px
+						min-height: 15px
+						max-width: 15px
+						max-height: 15px
+						margin-left: .3rem
+						background: transparent
 				.plates
 					p
 						padding: .15rem .2rem
 			.driver
-				z-index: 99
+				z-index: 98
 				input
 					width: 18.6rem
+				.tag
+					font-size: .625rem
+					font-weight: bold
+					display: flex
+					align-items: center
+					justify-content: flex-start
+					position: absolute
+					bottom: .3rem
+					left: .2rem
+					cursor: pointer
+					&:hover
+						.delete
+							display: block
+					.delete
+						display: none
+						min-width: 15px
+						min-height: 15px
+						max-width: 15px
+						max-height: 15px
+						margin-left: .3rem
+						background: transparent
 				.drivers
 					p
 						padding: .15rem .2rem

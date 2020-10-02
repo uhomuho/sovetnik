@@ -68,7 +68,7 @@ div#main(@click='close')
 								.level-left
 									.level-item Водитель:
 								.level-right
-									.level-item {{ waybill.driver.name }}
+									.level-item {{ waybill.driver ? waybill.driver.name : "" }}
 				hr
 
 				table.table
@@ -130,7 +130,7 @@ div#main(@click='close')
 						tr
 							td.title Общий пробег/расход
 							td 
-								span {{ milleageFinish ? (milleageFinish - waybill.mileageStart > 0 ? (milleageFinish - waybill.mileageStart).toLocaleString() : null ) : null }}
+								span {{ milleageFinish ? (milleageFinish - waybill.mileageStart).toLocaleString() : null }}
 							td
 							td 
 								span {{ totalFuel ? totalFuel : "" }}
@@ -156,7 +156,7 @@ div#main(@click='close')
 
 <script>
 import monthName from '@/month'
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import Calendar from '@/components/calendar/_calendar.vue'
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
@@ -168,7 +168,7 @@ export default {
 			startTime: false,
 			finishTime: false,
 			isLoading: false,
-			wbId: this.id,
+			wbId: this.num,
 			milleageFinish: null,
 			uts: [''],
 			showResults: true,
@@ -182,7 +182,7 @@ export default {
 		Calendar
 	},
 	props: {
-		id: {
+		num: {
 			default: null
 		}
 	},
@@ -237,6 +237,9 @@ export default {
 			getWaybill: 'apiCloseWaybill',
 			getWbBySerial: 'apiLastOpenWb' 
 		}),
+		...mapMutations('waybills', [
+			'setCloseWaybill'
+		]),
 		setTimeStart(date){
 			this.waybill.startFact = date.date
 		},
@@ -282,12 +285,6 @@ export default {
 			formData.status = "CLOSE"
 			formData.workText = this.uts
 
-			if (formData.mileageTotal < 0) {
-				return Snackbar.open({
-					message: 'Разница спидометра старт/финиш должна быть положительной!'
-				})
-			}
-
 			for (var data in formData) {
 				if (!formData[data]) {
 					return Snackbar.open({
@@ -295,21 +292,25 @@ export default {
 					})
 				}
 			}
-			for (var task in formData.workText) {
-				if (!formData.workText[task]) {
+
+			for ( let uts of this.uts ) {
+				if (!uts) {
 					return Snackbar.open({
 						message: 'Заполните все поля!'
 					})
 				}
 			}
-
+			
 			this.waybill.mileageTotal = formData.mileageTotal
+			this.waybill.mileageFinish = this.milleageFinish
+			this.waybill.fuelTotal = formData.fuelTotal
 
 			api.closeWaybill(this.waybill)
 				.then(() => {
 					Snackbar.open({
-						message: 'Путевой лист успешно закрыт!'
+						message: 'Путевой лист отправлен на проверку!'
 					})
+					this.setCloseWaybill(null)
 					this.$router.push('/waybills')
 				})
 				.catch(err => console.error(err))
@@ -331,13 +332,13 @@ export default {
 		},
 		changeWidthId() {
 			if (this.wbId) {
-				if (this.wbId.length <= 5) {
-					let width = this.wbId.length * 30
-					document.querySelector(".id").style.width = `${width}px`
-				}
+				// if (this.wbId.length <= 5) {
+				// 	let width = this.wbId.length * 30
+				// 	document.querySelector(".id").style.width = `${width}px`
+				// }
 				// this.milleageFinish = this.milleageFinish.toLocaleString()
 			} else {
-				document.querySelector(".id").style.width = `0px`
+				// document.querySelector(".id").style.width = `0px`
 			}
 		},
 		close(e) {
@@ -353,10 +354,12 @@ export default {
 		}
 	},
 	beforeMount() {
-		if (this.id) {
+		if (this.num) {
 			this.isLoading = true
-			this.getWaybill(this.id)
+			this.getWaybill(this.num)
 				.then(() => this.isLoading = false)
+		} else if (!this.waybill) {
+			this.$router.push('/waybills?status=opened')
 		}
 		if (this.waybill && this.waybill.id) {
 			this.wbId = this.waybill.id

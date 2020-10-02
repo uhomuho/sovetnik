@@ -190,8 +190,8 @@ export default {
 							total  = {
 								motionFuelUp: 0,
 								motionFuelDown: 0,
-								tankFuelUp: 0,
-								tankFuelDown: 0
+								firstFuel: 0,
+								lastFuel: 0
 							}
 					
 					for (var i = 0; i <= report.length - 1; i++) {
@@ -199,8 +199,8 @@ export default {
 	
 						total.motionFuelUp += report[i].motionFuelUp ? Number(report[i].motionFuelUp) : 0
 						total.motionFuelDown += report[i].motionFuelDown ? Number(report[i].motionFuelDown) : 0
-						total.tankFuelUp += report[i].tankFuelUp ? Number(report[i].tankFuelUp) : 0
-						total.tankFuelDown += report[i].tankFuelDown ? Number(report[i].tankFuelDown) : 0
+						total.firstFuel += report[i].firstFuel ? Number(report[i].firstFuel) : 0
+						total.lastFuel += report[i].lastFuel ? Number(report[i].lastFuel) : 0
 	
 						for (var key in report[i]) {
 							let field = report[i][key]
@@ -213,8 +213,8 @@ export default {
 					}
 					total.motionFuelUp = total.motionFuelUp.toFixed(2).replace(".", ",")
 					total.motionFuelDown = total.motionFuelDown.toFixed(2).replace(".", ",")
-					total.tankFuelUp = total.tankFuelUp.toFixed(2).replace(".", ",")
-					total.tankFuelDown = total.tankFuelDown.toFixed(2).replace(".", ",")
+					total.firstFuel = total.firstFuel.toFixed(2).replace(".", ",")
+					total.lastFuel = total.lastFuel.toFixed(2).replace(".", ",")
 	
 					commit('setTotalData', total)
 					commit('setAutographReport', report)
@@ -228,17 +228,19 @@ export default {
 							distance 		= 897/r.data.track.length,
 							lineConfig 	= [],
 							chart 			= r.data.track,
-							max 				= 0
+							max 				= 0,
+							min 				= 0
 
 					for(let key in chart) {
-						if ((chart[key].firstFuel-chart[key].lastFuel) < 0) {
+						if ((chart[key].firstFuel-chart[key].lastFuel) < 0 || chart[key].totalDistance == 0) {
 							chart[key].fuelDown = 0
 						} else {
 							chart[key].fuelDown = new Number(((chart[key].firstFuel-chart[key].lastFuel)/(chart[key].totalDistance)).toFixed(2))
+							console.log(chart[key].fuelDown)
 						}
 					}
 					
-					let min = chart[0].fuelDown
+					min = chart[0].fuelDown
 					for (let i = 0, len=chart.length; i < len; i++) {
 						let v = chart[i].fuelDown
 						max = (v > max) ? v : max
@@ -249,7 +251,7 @@ export default {
 						chart[key].config = {
 							id: key,
 							x: x + 10,
-							y: 400 -(chart[key].fuelDown * (400/((Math.ceil(max/10) * 10) + 5))),
+							y: max !== 0 ? 400 -(chart[key].fuelDown * (400/((Math.ceil(max/10) * 10) + 5))) : 400 - chart[key].fuelDown,
 							radius: 10
 						}
 						lineConfig.push(chart[key].config.x)
@@ -296,9 +298,20 @@ export default {
 
 					let dots = []
 					for (let item of chart) {
-						dots.push(item.firstLocation)
-						dots.push(item.lastLocation)
+						if (!item.firstLocation.includes('°')) {
+							dots.push(item.firstLocation)
+						}
+						if (!item.lastLocation.includes('°')) {
+							dots.push(item.lastLocation)
+						}
 					}
+					function onlyUnique(value, index, self) {
+						return self.indexOf(value) === index;
+					}
+					
+					// usage example:
+					dots = dots.filter(onlyUnique)
+
 					r.data.trackLocations = dots
 
 					commit('setWaybillReport', r.data)

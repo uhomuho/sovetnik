@@ -2,6 +2,9 @@
 	.wrapper#waybills_table(@click='close')
 		.container
 			.table-container
+				img.spin( 
+					src="@/assets/icons/spin.svg"
+					@click='getWaybills(filter)')
 				table.table.is-fullwidth
 					thead
 						tr
@@ -71,28 +74,29 @@
 													img(:src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/check.svg`')
 
 					tbody(
-						v-if='waybills.length !== 0'
-						v-for='waybill in waybills')
+						v-if='waybills.listWaybill.length !== 0'
+						v-for='waybill in waybills.listWaybill')
+						//- tr(@click='waybill.status.name == "OPEN" ? goto(`/waybills/close/${waybill.id}`) : null')
 						tr(@click='waybill.status.name == "CLOSE" ? goto(`/reports/waybill/${waybill.id}`) : waybill.status.name == "OPEN" ? goto(`/waybills/close/${waybill.id}`) : null')
 							td.id(
 								:class='waybill.status.class') {{ waybill.id }}
 							td.car.is-paddingless
 								table.table.is-fullwidth
 									tr
-										td {{ waybill.car.model }}
-										td.is-lowercase {{ waybill.car.registrationPlate }}
+										td {{ waybill.car ? waybill.car.model : "" }}
+										td.is-lowercase {{ waybill.car ? waybill.car.registrationPlate : "" }}
 							td.start 
-								|{{ waybill.startFact ? dateTimeStamp(waybill.startFact) : null }}
+								|{{ waybill.startPlan ? dateTimeStamp(waybill.startPlan) : waybill.startFact ? dateTimeStamp(waybill.startFact) : null }}
 								img.icon(
 									v-if='waybill.startPlan && waybill.startFact'
 									:src='`img/check_${waybill.startPlan == waybill.startFact ? "true" : "false"}.svg`')
 							td.finish
-								|{{ waybill.finishPlan ? dateTimeStamp(waybill.finishPlan) : null }}
+								|{{ waybill.finishPlan ? dateTimeStamp(waybill.finishPlan) : waybill.finishFact ? dateTimeStamp(waybill.finishFact) : null }}
 								img.icon(
 									v-if='waybill.finishPlan && waybill.finishFact'
 									:src='`img/check_${waybill.finishPlan == waybill.finishFact ? "true" : "false"}.svg`')
 							td.task {{ waybill.workText.length <= 40 ? waybill.workText : `${waybill.workText.slice(0, -(waybill.workText.length - 40))}...` }}
-							td.driver {{ waybill.driver.name }}
+							td.driver {{ waybill.driver ? waybill.driver.name : "" }}
 							td.status(
 								:class='waybill.status.class') 
 								|{{ waybill.status.text }}
@@ -108,7 +112,7 @@
 										src="@/assets/icons/close-waybill.svg")
 			b-loading(
 				v-model='loading')
-			.container(v-if='waybills.length == 0')
+			.container(v-if='waybills.listWaybill.length == 0')
 				.content
 					span.subtitle.has-text-warning Нет путевых листов по заданным параметрам
 			router-link.open(
@@ -118,7 +122,7 @@
 			nav.pagination(
 				role="navigation"
 				aria-label="pagination"
-				v-if='waybills.length !== 0')
+				v-if='waybills.listWaybill.length !== 0')
 				p {{ waybillsOnPage }}/{{ waybills.count }}
 				.button.prev( 
 					@click='prevPage'
@@ -144,7 +148,7 @@ export default {
 			mode: process.env.NODE_ENV,
 			currentPage: 1,
 			filter: {
-				status: [],
+				status: this.status == "closed" ? ["CLOSE"] : this.status == "check" ? ["CHECK"] : this.status == "opened" ? ["OPEN"] : [],
 				serial: null
 			},
 			statusList: [
@@ -169,7 +173,7 @@ export default {
 			choosenCar: null
 		}
 	},
-	props: ['waybills', 'isLoading', 'total'],
+	props: ['waybills', 'isLoading', 'total', 'status'],
 	computed: {
 		...mapState('waybills', {
 			loading: state => state.loading

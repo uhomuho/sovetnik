@@ -35,30 +35,26 @@
 										:class='filterType == "range" ? "active" : null') период
 						.level-item
 							.wrapper.from(
-								@click='openFrom')
+								@click='openCalendar')
 								p {{ stringFrom }}
 								Calendar(
-									v-if='!invalidDate(dateFrom)'
-									:class='showFrom ? null : "is-hidden"'
-									@select='setFrom'
-									:time='false',
-									:date='dateFrom')
+									v-if='!invalidDate(dateFrom) && !invalidDate(dateTo)'
+									:class='showCalendar ? null : "is-hidden"'
+									@dateTo='setTo'
+									@dateFrom='setFrom'
+									:firstDate='dateFrom'
+									:lastDate='dateTo')
 							.wrapper.to(
-								@click='openTo')
+								@click='openCalendar')
 								p {{ stringTo }}
-								Calendar(
-									v-if='!invalidDate(dateTo)'
-									:class='showTo ? null : "is-hidden"'
-									@select='setTo'
-									:time='false',
-									:date='dateTo')
 
 				hr
 				Table(
 					v-if='waybills'
 					:waybills='waybills'
 					:total='total'
-					:isLoading='isLoading')
+					:isLoading='isLoading',
+					:status='$router.currentRoute.query.status')
 
 
 		b-loading(
@@ -71,7 +67,7 @@
 import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
 import monthName from '@/month'
 import Table from '@/components/_table'
-import Calendar from '@/components/calendar/_calendar.vue'
+import Calendar from '@/components/calendar/_calendar-range.vue'
 
 export default {
 	name: 'Reports',
@@ -82,10 +78,10 @@ export default {
 	data() {
 		return {
 			isLoading: false,
-			showTo: false,
-			showFrom: false
+			showCalendar: false
 		}
 	},
+	props: ['status'],
 	computed: {
 		...mapGetters('waybills', {
 			waybills: 'waybills',
@@ -128,23 +124,16 @@ export default {
 				this.getWaybills()
 			}, 50)
 		},
-		openTo(e) {
-			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
-				this.showTo = !this.showTo
-			}
-		},
-		openFrom(e) {
-			if(e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
-				this.showFrom = !this.showFrom
+		openCalendar(e) {
+			if(e.target.matches('.wrapper.to *') || e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+				console.log('xex')
+				this.showCalendar = !this.showCalendar
 			}
 		},
 		close(e) {
 			if(!e.target.matches('.calendar *, .wrapper.to *, .wrapper.from *')) {
-				if (this.showTo) {
-					this.showTo = false
-				}
-				if (this.showFrom) {
-					this.showFrom = false
+				if (this.showCalendar) {
+					this.showCalendar = false
 				}
 			}
 		},
@@ -158,17 +147,68 @@ export default {
 	},
 	mounted() {
 
+		let status = this.$router.currentRoute.query.status
+
 		if(!this.dateTo || !this.dateFrom || this.dateFrom == "Invalid Date" || this.dateTo == "Invalid Date") {
 			this.setDates()
 				.then(() => {
 					this.isLoading = true
-					this.getWaybills()
-						.then(() => this.isLoading = false)
+					switch (status) {
+						case "closed":
+							this.getWaybills({
+								serial: null,
+								status: ["CLOSE"]
+							})
+								.then(() => this.isLoading = false)
+							break
+						case "check":
+							this.getWaybills({
+								serial: null,
+								status: ["CHECK"]
+							})
+								.then(() => this.isLoading = false)
+							break
+						case "opened":
+							this.getWaybills({
+								serial: null,
+								status: ["OPEN"]
+							})
+								.then(() => this.isLoading = false)
+							break
+						default:
+							this.getWaybills()
+								.then(() => this.isLoading = false)
+							break
+					}
 				})
 		} else {
-			this.isLoading = true
-				this.getWaybills()
-					.then(() => this.isLoading = false)
+			switch (status) {
+				case "closed":
+					this.getWaybills({
+						serial: null,
+						status: ["CLOSE"]
+					})
+						.then(() => this.isLoading = false)
+					break
+				case "check":
+					this.getWaybills({
+						serial: null,
+						status: ["CHECK"]
+					})
+						.then(() => this.isLoading = false)
+					break
+				case "opened":
+					this.getWaybills({
+						serial: null,
+						status: ["OPEN"]
+					})
+						.then(() => this.isLoading = false)
+					break
+				default:
+					this.getWaybills()
+						.then(() => this.isLoading = false)
+					break
+			}
 		}
 	}
 }
@@ -225,6 +265,11 @@ export default {
 						justify-content: flex-end
 						flex-direction: column
 
+						.calendar.range
+							position: absolute
+							left: unset!important
+							right: 0
+
 						table
 							width: 10rem
 							td
@@ -241,13 +286,15 @@ export default {
 
 						.wrapper
 							text-align: left
-							width: 100%
+							width: 206px
 							padding: .8rem 1.25rem
 							border: 1px dashed #D0D9DE
 							border-bottom: unset
 							cursor: pointer
 							user-select: none
 							position: relative
+							&.to
+								z-index: 99
 							p
 								font-size: .875rem
 								font-weight: 500

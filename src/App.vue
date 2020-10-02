@@ -1,17 +1,20 @@
 <template lang="pug">
 	#app
-		Header( 
+		Header(
+			v-if='header'
+			:user='user'
 			:show='show'
 			@show='showNav'
 			@hide='hideNav'
 			:login='isLogin')
 		.hero
 			Sidebar(
+				:user='user'
 				v-if='!isLogin'
 				:routes='routes'
 				@show='showNav'
 				@hide='hideNav')
-			router-view#main
+			router-view#main(:user='user')
 		.modal.is-active#error(v-if='timezoneError')
 			.modal-background
 			.modal-content
@@ -26,6 +29,7 @@
 import Sidebar from '@/components/_sidebar'
 import Header from '@/components/_header'
 import { mapActions, mapState } from 'vuex'
+import CryptoJS from 'crypto-js'
 
 export default {
   name: 'App',
@@ -47,7 +51,9 @@ export default {
 				}
 			},
 			show: false,
-			isLogin: false
+			isLogin: false,
+			user: null,
+			header: false
 		}
 	},
 	computed: {
@@ -61,9 +67,10 @@ export default {
 		})
 	},
 	methods: {
-		...mapActions('waybills', [
-			'setDates'
-		]),
+		...mapActions('waybills', {
+			setDates: 'setDates',
+			getNewWb: 'getNewWaybillData'
+		}),
 		...mapActions('reports', {
 			setRepDates: 'setDates'
 		}),
@@ -80,6 +87,29 @@ export default {
 				this.isLogin = true
 			} else {
 				this.isLogin = false
+			}
+
+			if ( localStorage.user && localStorage.user !== 'null' ) {
+				let userData = CryptoJS.AES.decrypt(localStorage.user, 'kFLeCZ19095')
+				userData = userData.toString(CryptoJS.enc.Utf8)
+				userData = JSON.parse(userData)
+				this.user = userData
+			} else {
+				this.user = null
+			}
+
+			if ( localStorage.newWaybill == 'null' || !localStorage.newWaybill ) {
+				this.getNewWb()
+			}
+		},
+		localStorage() {
+			if ( localStorage.user && localStorage.user !== 'null' ) {
+				let userData = CryptoJS.AES.decrypt(localStorage.user, 'kFLeCZ19095')
+				userData = userData.toString(CryptoJS.enc.Utf8)
+				userData = JSON.parse(userData)
+				this.user = userData
+			} else {
+				this.user = null
 			}
 		}
 	},
@@ -100,6 +130,15 @@ export default {
 			this.isLogin = true
 		} else {
 			this.isLogin = false
+		}
+
+		if ( localStorage.user && localStorage.user !== 'null' ) {
+			let userData = CryptoJS.AES.decrypt(localStorage.user, 'kFLeCZ19095')
+			userData = userData.toString(CryptoJS.enc.Utf8)
+			userData = JSON.parse(userData)
+			this.user = userData
+		} else {
+			this.user = null
 		}
 	}
 }

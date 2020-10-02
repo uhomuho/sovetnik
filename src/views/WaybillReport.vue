@@ -29,8 +29,7 @@
 												v-model="wbId"
 												placeholder="ID"
 												type="number"
-												@input='showHint'
-												@keyup='changeWidthId')
+												@input='showHint')
 								.level-right
 									.level-item
 										|от
@@ -50,7 +49,7 @@
 						.plates.dropdown( v-if='plates' )
 							p( 
 								v-for='plate in plates'
-								@click='getWb(plate)')
+								@click='getWb(plate.serial)')
 								|{{ plate.registrationPlate }}
 
 					.item
@@ -64,7 +63,7 @@
 					:steps='waybillReport.steps')
 				.tile.is-ancestor(v-if='waybill')
 					.tile.is-parent.is-paddingless
-						.tile.is-child
+						.tile.is-child.is-6
 							p.title Сравнение данных
 							table.table.is-fullwidth
 								thead
@@ -87,16 +86,19 @@
 										td {{ waybillTimeDiff }}
 						.tile.is-child
 							p.title Сравнение адресов
+							.content(v-if='!trackLocations || trackLocations.length == 0 || !wbLocations || wbLocations.length == 0')
+								p.is-size-4.has-text-warning
+									|Нет данных по адресам
 							.tile
 								.tile.is-parent
-									.tile.is-child
+									.tile.is-child(v-if='trackLocations && trackLocations.length !== 0')
 										p.title АВТОГРАФ
 										.with-border
 											p(
 												v-if='trackLocations'
 												v-for='location in trackLocations')
 												|{{ location }},&nbsp;
-									.tile.is-child(v-if='wbLocations')
+									.tile.is-child(v-if='wbLocations && wbLocations !== 0')
 										p.title Путевой лист
 										.with-border
 
@@ -105,10 +107,11 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
 import monthName from '@/month'
 import Chart from '@/components/canvas/_wb-chart'
 import api from '@/api/apiActions'
+import { SnackbarProgrammatic } from 'buefy'
 
 export default {
 	name: 'Report',
@@ -176,26 +179,34 @@ export default {
 		...mapActions('reports', {
 			getWaybill: 'apiWaybillReport'
 		}),
+		...mapMutations('reports', {
+			setWaybill: 'setWaybillReport'
+		}),
+		getWb(serial) {
+			api.getLastWb({serial: serial})
+				.then(r => {
+					if (r.data) {
+						this.getWaybill(r.data.id)
+						this.plates = null
+					} else {
+						SnackbarProgrammatic.open({
+							message: 'По данному регистрационному номеру нет закрытых путевых листов',
+							position: 'is-top-right',
+							duration: 2000,
+							actionText: null		
+						})
+					}
+				})
+		},
 		showHint() {
 			this.hint = false
 			setTimeout(() => {
 				this.hint = true
 			}, 5000)
 		},
-		changeWidthId() {
-			if (this.wbId) {
-				if (this.wbId.length <= 5) {
-					let width = this.wbId.length * 30
-					document.querySelector(".id").style.width = `${width}px`
-				}
-				// this.milleageFinish = this.milleageFinish.toLocaleString()
-			} else {
-				document.querySelector(".id").style.width = `0px`
-			}
-		},
 		async filterPlates(e) {
 			await api.getPlates(e.target.value)
-				.then(r => this.plates = r.data.listCar)
+				.then(r => this.plates = r.data)
 		}
 	},
 	mounted() {

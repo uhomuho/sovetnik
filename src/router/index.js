@@ -21,6 +21,9 @@ import WaybillsReports from '@/views/WaybillsReports'
 import WaybillReport from '@/views/WaybillReport'
 import Autograph from '@/views/Autograph'
 
+// import store from '@/store'
+// console.log(store.state.waybills.newWaybill)
+
 // Router
 export default new Router({
 	base: process.env.BASE_URL,
@@ -30,7 +33,12 @@ export default new Router({
 			path: '/',
 			name: 'Login',
 			component: Login,
-			hidden: true
+			hidden: true,
+			redirect: '/waybills/open'
+		},
+		{
+			path: '/login',
+			redirect: '/'
 		},
 		{
 			path: '/register',
@@ -43,6 +51,7 @@ export default new Router({
 			name: 'Waybills',
 			component: Waybills,
 			hidden: false,
+			props: true,
 			children: [
 				{
 					path: '',
@@ -62,7 +71,7 @@ export default new Router({
 				},
 				{
 					path: 'close',
-					name: 'CloseWaybill',
+					name: 'CloseWaybillWithoutId',
 					menuName: 'Закрыть путевой лист',
 					menuIcon: 'closeWaybill',
 					component: Close,
@@ -70,9 +79,10 @@ export default new Router({
 					props: true,
 					children: [
 						{
-							path: ':id',
+							path: ':num',
 							component: Close,
-							hidden: true
+							hidden: true,
+							name: 'CloseWaybill',
 						}
 					]
 				},
@@ -90,6 +100,7 @@ export default new Router({
 			menuName: 'Отчеты',
 			component: Reports,
 			hidden: false,
+			redirect: '/waybills/open',
 			children: [
 				{
 					path: 'waybills',
@@ -125,7 +136,7 @@ export default new Router({
 		},
 		{
 			path: '*',
-			redirect: '/waybills',
+			redirect: '/waybills/open',
 			hidden: true
 		},
 	]

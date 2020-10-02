@@ -24,9 +24,11 @@ div
 								.level-item
 									|от
 									span.date-of(@click='openOf') {{ dateStringOf }}
-									Calendar( 
+									Calendar.cal-of( 
 										@select='selectOf'
-										:class='ofTime ? null : "hide"')
+										@change='changeOf'
+										:class='ofTime ? null : "hide"'
+										:date='new Date(waybill.of)')
 			hr
 			.tile.is-ancestor.is-marginless
 				.tile
@@ -37,10 +39,16 @@ div
 						.level-right
 							.level-item.plate(
 								:class='plates ? "is-active" : ""')
-									input(
+									input#registrationPlate(
+										v-if='waybill'
 										@keyup='filterPlates'
-										:value='waybill.car.registrationPlate'
-										placeholder="Гос. номер")
+										placeholder="Гос. номер"
+										:disabled="waybill.car && waybill.car.registrationPlate")
+									.tag(
+										v-if='waybill.car && waybill.car.registrationPlate'
+										@click='setRegistrationPlate({serial: null, registrationPlate: null})') 
+										|{{ waybill.car ? waybill.car.registrationPlate : "" }}
+										img.delete( src="@/assets/icons/delete.svg" )
 									img.icon( src="@/assets/icons/angle-4.svg" )
 									.plates.dropdown(v-if='plates')
 										p(
@@ -55,10 +63,16 @@ div
 								|Водитель:
 						.level-right
 							.level-item
-								input.driver(
-									@keyup="filterDriver" 
-									v-model="waybill.driver.name"
-									placeholder="Водитель")
+								input.driver#driver(
+									v-if='waybill'
+									@keyup="filterDriver"
+									placeholder="Водитель"
+									:disabled="waybill.driver && waybill.driver.name")
+								.tag(
+									v-if='waybill.driver && waybill.driver.name'
+									@click='setDriver(null)') 
+									|{{ waybill.driver.name }}
+									img.delete( src="@/assets/icons/delete.svg" )
 								img.icon( src="@/assets/icons/angle-4.svg")
 
 								.drivers.dropdown(
@@ -66,7 +80,7 @@ div
 									p(
 										v-for='driver in drivers'
 										@click='setDriver(driver), drivers = null'
-										:class='driver.id == waybill.driver.id ? "selected" : ""')
+										:class='waybill.driver && driver.id == waybill.driver.id ? "selected" : ""')
 										|{{ driver.name }}
 					.level
 						.level-left
@@ -83,10 +97,13 @@ div
 									img.icon( src="@/assets/icons/angle-4.svg" )
 
 								Calendar( 
+									@change='changeStart'
 									@select='selectStart'
+									:date='waybill.startPlan ? new Date(waybill.startPlan) : timeForDatepicker'
 									:time='true'
 									:class='startTime ? null : "hide"',
-									:dateFinish='unixDateFinish ? unixDateFinish : null')
+									:dateFinish='unixDateFinish ? unixDateFinish : null'
+									:open='true')
 					.level
 						.level-left
 							.level-item
@@ -102,10 +119,13 @@ div
 									img.icon( src="@/assets/icons/angle-4.svg" )
 
 								Calendar( 
+									@change='changeFinish'
 									@select='selectFinish'
+									:date='waybill.finishPlan ? new Date(waybill.finishPlan) : timeForDatepicker'
 									:time='true'
 									:class='finishTime ? null : "hide"',
-									:dateStart='unixDateStart ? unixDateStart : null')
+									:dateStart='unixDateStart ? unixDateStart : null'
+									:open='true')
 					hr
 
 					.level
@@ -139,7 +159,7 @@ div
 						:model='waybill.car && waybill.car.model ? waybill.car.model : null'
 						:registrationPlate='waybill.car && waybill.car.registrationPlate ? waybill.car.registrationPlate : null'
 						:serial='waybill.serial'
-						:driver='waybill.driver'
+						:driver='waybill.driver ? waybill.driver.name : null'
 						:task='waybill.workText'
 						:mileageLast='waybill.mileageStart'
 						:fuelLast='waybill.fuelStart',
@@ -169,7 +189,7 @@ div
 import monthName from '@/month'
 import Calendar from '@/components/calendar/_calendar'
 import Blank from '@/components/canvas/_wb-blank'
-import { mapGetters, mapActions, mapState, mapMutations } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
@@ -194,14 +214,37 @@ export default {
 			drivers: null
 		}
 	},
+	watch: {
+		waybill() {
+			if (this.waybill && !this.waybill.driver) {
+				this.waybill.driver = {
+					name: null
+				}
+			}
+			if (this.waybill && !this.waybill.car) {
+				this.waybill.car = {
+					registrationPlate: null,
+					model: null
+				}
+			}
+			if (this.lastWb) {
+				this.waybill.mileageStart = this.lastWb.mileageFinish
+				this.waybill.fuelStart = this.lastWb.fuelFinish
+			}
+		}
+	},
 	computed: {
-		...mapState('waybills', {
-			waybill: state => state.newWaybill
-		}),
+		// ...mapState('waybills', {
+		// 	waybill: state => state.newWaybill
+		// }),
 		...mapGetters('waybills', {
 			listDrivers: 	'getNewListDrivers',
-			listCar: 			'getNewListCar'
+			listCar: 			'getNewListCar',
+			waybill: 			'getNewWaybill'
 		}),
+		timeForDatepicker() {
+			return new Date(`${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()} 05:00`)
+		},
 		unixDateStart() {
 			return this.waybill.startPlan ? new Date(this.waybill.start).getTime() : null
 		},
@@ -254,7 +297,8 @@ export default {
 	methods: {
 		async openWb() {
 			this.error = false
-			if (!this.waybill.id || !this.waybill.of || !this.waybill.car.registrationPlate || !this.waybill.driver.name || !this.waybill.fuelStart || !this.waybill.mileageStart || !this.waybill.workText || !this.waybill.startPlan || !this.waybill.finishPlan) {
+			let driver = this.waybill.driver ? this.waybill.driver.name : false
+			if (!this.waybill.id || !this.waybill.of || !this.waybill.car.registrationPlate || !driver || !this.waybill.fuelStart || !this.waybill.mileageStart || !this.waybill.workText || !this.waybill.startPlan || !this.waybill.finishPlan) {
 				return Snackbar.open({
 					message: 'Не все поля заполнены или заполнены неверно!'
 				})
@@ -275,19 +319,19 @@ export default {
 			setCar: 'setNewWbCar'
 		}),
 		async filterDriver(e) {
-			this.setDriverName(e.target.value)
 			await api.getDrivers(e.target.value)
-				.then(r => this.drivers = r.data.listDrivers)
+				.then(r => this.drivers = r.data)
 		},
 		async filterPlates(e) {
-			this.setPlate(e)
 			await api.getPlates(e.target.value)
-				.then(r => this.plates = r.data.listCar)
+				.then(r => this.plates = r.data)
 		},
 		async getLastWb(serial) {
+			document.querySelector('#registrationPlate').value = ""
 			await api.getLastWb({serial: serial})
 				.then(r => {
-					this.lastWb = r.data.waybill
+					this.lastWb = r.data
+					localStorage.lastWb = JSON.stringify(r.data)
 					if (this.lastWb) {
 						this.waybill.mileageStart = this.lastWb.mileageFinish
 						this.waybill.fuelStart = this.lastWb.fuelFinish
@@ -296,11 +340,44 @@ export default {
 		},
 		selectStart(data) {
 			this.waybill.startPlan = data.date.getTime()
+			let startDate = new Date(this.waybill.startPlan).getDate(),
+					startMonth = new Date(this.waybill.startPlan).getMonth(),
+					startYear = new Date(this.waybill.startPlan).getFullYear(),
+					startHours = new Date(this.waybill.startPlan).getHours()
+			switch (startHours) {
+				case 5:
+					this.waybill.finishPlan = new Date(`${startYear}-${startMonth + 1}-${startDate} 13:00`).getTime()
+					break
+				case 8:
+					this.waybill.finishPlan = new Date(`${startYear}-${startMonth + 1}-${startDate} 17:00`).getTime()
+					break
+				case 7:
+					this.waybill.finishPlan = new Date(`${startYear}-${startMonth + 1}-${startDate} 17:00`).getTime()
+					break
+				case 20:
+					this.waybill.finishPlan = new Date(`${startYear}-${startMonth + 1}-${startDate+1} 05:00`).getTime()
+					break
+				case 22:
+					this.waybill.finishPlan = new Date(`${startYear}-${startMonth + 1}-${startDate+1} 07:00`).getTime()
+					break
+			}
+			this.startTime = false
 		},
 		selectFinish(data) {
 			this.waybill.finishPlan = data.date.getTime()
+			this.finishTime = false
+		},
+		changeStart(data) {
+			this.waybill.startPlan = data.date.getTime()
+		},
+		changeFinish(data) {
+			this.waybill.finishPlan = data.date.getTime()
 		},
 		selectOf(data) {
+			this.waybill.of = data.date.getTime()
+			this.ofTime = false
+		},
+		changeOf(data) {
 			this.waybill.of = data.date.getTime()
 		},
 		openOf() {
@@ -319,7 +396,7 @@ export default {
 			this.ofTime = false
 		},
 		close(e) {
-			if(!e.target.matches('.date *') && !e.target.matches('span.date-of')) {
+			if(!e.target.matches('.date *') && !e.target.matches('span.date-of') && !e.target.matches('.calendar *')) {
 				if (this.startTime) {
 					this.startTime = false
 				}
@@ -333,12 +410,12 @@ export default {
 		},
 		changeWidthId() {
 			if (this.waybill.id) {
-				if (this.waybill.id.length <= 5) {
-					let width = this.waybill.id.length * 30
-					document.querySelector(".id").style.width = `${width}px`
-				}
+				// if (`${this.waybill.id}`.length <= 5) {
+				// 	let width = `${this.waybill.id}`.length * 31
+				// 	document.querySelector(".id").style.width = `${width}px`
+				// }
 			} else {
-				document.querySelector(".id").style.width = `0px`
+				// document.querySelector(".id").style.width = `0px`
 			}
 		},
 		setRegistrationPlate(obj) {
@@ -347,8 +424,15 @@ export default {
 			this.waybill.car = obj
 		},
 		setDriver(obj) {
-			this.driver = obj.name
-			this.waybill.driver = obj
+			document.querySelector('#driver').value = ""
+			if (obj) {
+				this.driver = obj.name
+				this.waybill.driver = obj
+				this.waybill.driverID = obj.id
+			} else {
+				this.waybill.driver = null
+				this.waybill.driverID = null
+			}
 		}
 	},
 	beforeMount() {
@@ -360,12 +444,19 @@ export default {
 		if (this.registrationPlate) {
 			this.getLastWb(this.waybill.serial)
 		}
-		if (!this.waybill.driver) {
-			this.waybill.driver = {
-				name: null
-			}
+	},
+	mounted() {
+		if (localStorage.lastWb && localStorage.lastWb !== null && localStorage.lastWb !== 'null') {
+			this.lastWb = JSON.parse(localStorage.lastWb)
 		}
-		if (!this.waybill.car) {
+		if (this.waybill && !this.waybill.driver) {
+			this.waybill.driver = {}
+			this.waybill.driver.name = null
+		}
+		if (this.waybill) {
+			this.waybill.of = new Date().getTime()
+		}
+		if (this.waybill && !this.waybill.car) {
 			this.waybill.car = {
 				registrationPlate: null,
 				model: null

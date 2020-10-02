@@ -35,24 +35,18 @@
 										:class='filter == "range" ? "active" : null') период
 							.level-item
 								.wrapper.from(
-									@click='openFrom')
+									@click='openCalendar')
 									p {{ stringFrom }}
 									Calendar(
-										@select='setDateFrom'
-										v-if='showFrom && !invalidDate(dateFrom)'
-										:autograph='true'
-										:date='new Date(dateFrom)'
-										:time='false')
+										v-if='!invalidDate(dateFrom) && !invalidDate(dateTo)'
+										:class='showCalendar ? null : "is-hidden"'
+										@dateTo='setTo'
+										@dateFrom='setFrom'
+										:firstDate='new Date(dateFrom)'
+										:lastDate='new Date(dateTo)')
 								.wrapper.to(
-									@click='openTo')
+									@click='openCalendar')
 									p {{ stringTo }}
-									Calendar(
-										@select='setDateTo'
-										v-if='showTo && !invalidDate(dateTo)'
-										:autograph='true'
-										:time='false'
-										:date='new Date(dateTo)'
-										:range='false')
 
 				hr
 				Table(
@@ -62,7 +56,7 @@
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 import Table from '@/components/_autographReportTable'
-import Calendar from '@/components/calendar/_calendar.vue'
+import Calendar from '@/components/calendar/_calendar-range.vue'
 import monthName from '@/month'
 
 export default {
@@ -74,8 +68,7 @@ export default {
 	data() {
 		return {
 			date: new Date(),
-			showTo: false,
-			showFrom: false
+			showCalendar: false
 		}
 	},
 	computed: {
@@ -107,35 +100,27 @@ export default {
 			setDateFrom: 'setDateFrom',
 			setFilter: 'setFilter'
 		}),
-		to(date) {
+		setTo(date) {
 			this.setDateTo(date)
-				.then(() => {
-					this.getAutographReport()
-				})
+			setTimeout(() => {
+				this.getAutographReport()
+			}, 50)
 		},
-		from(date) {
+		setFrom(date) {
 			this.setDateFrom(date)
-				.then(() => {
-					this.getAutographReport()
-				})
+			setTimeout(() => {
+				this.getAutographReport()
+			}, 50)
 		},
-		openTo(e) {
-			if(e.target.matches('.wrapper.to p') || e.target.matches('.wrapper.to')) {
-				this.showTo = !this.showTo
-			}
-		},
-		openFrom(e) {
-			if(e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
-				this.showFrom = !this.showFrom
+		openCalendar(e) {
+			if(e.target.matches('.wrapper.to *') || e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+				this.showCalendar = !this.showCalendar
 			}
 		},
 		close(e) {
 			if(!e.target.matches('.calendar *, .wrapper.to *, .wrapper.from *')) {
-				if (this.showTo) {
-					this.showTo = false
-				}
-				if (this.showFrom) {
-					this.showFrom = false
+				if (this.showCalendar) {
+					this.showCalendar = false
 				}
 			}
 		},
@@ -224,11 +209,13 @@ export default {
 								&.active
 									color: $orange4
 
+						.wrapper.to
+							z-index: 99
 						
 						.wrapper.to,
 						.wrapper.from
 							text-align: left
-							width: 100%
+							width: 206px
 							padding: .8rem 1.25rem
 							border: 1px dashed #D0D9DE
 							border-bottom: unset
@@ -243,9 +230,7 @@ export default {
 
 							.calendar
 								position: absolute
-								// top: -1px
-								// left: -101%
 								top: 100%
-								left: 0
+								right: 0
 								z-index: 99
 </style>

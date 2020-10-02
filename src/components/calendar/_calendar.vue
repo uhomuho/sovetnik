@@ -29,24 +29,24 @@
 					tr(v-for='week in weeks')
 						td.calendar-td(
 							v-for='day in week'
+							v-if='day.unix > 0'
 							@click='setDay(day.num)'
 							:class='compDay == day.unix ? "active" : null')
-							| {{day.num}}
+							| {{ day.num }}
+						td(v-else)
 		.footer(v-if='time')
 			.timepicker
+				.trigger.incrase(@click='incraseHours()')
+					img.incrase(src="@/assets/icons/incrase.svg")
+				.day-part
+					|{{ hours == '05' || hours == '08' || hours == '07' ? 'Утро' : hours == '13' ? 'День' : hours == '17' || hours == '20' || hours == '22' || hours == '19' ? 'Вечер' : "" }}
 				.hours
-					.trigger.incrase(@click='incraseHours()')
-						img.incrase(src="@/assets/icons/incrase.svg")
 					|{{ hours }}
-					.trigger.decrase(@click='decraseHours()')
-						img.incrase(src="@/assets/icons/decrase.svg")
 				|:
 				.minutes
-					.trigger.incrase(@click='incraseMinutes()')
-						img.incrase(src="@/assets/icons/incrase.svg")
 					|{{ minutes }}
-					.trigger.decrase(@click='decraseMinutes()')
-						img.incrase(src="@/assets/icons/decrase.svg")
+				.trigger.decrase(@click='decraseHours()')
+					img.incrase(src="@/assets/icons/decrase.svg")
 	div.calendar.range(v-else)
 		.header
 			.trigger(@click='decraseYear()')
@@ -121,25 +121,27 @@ export default {
 		return {
 			currentMonth: monthName.num[new Date().getMonth()],
 			currentYear: new Date().getFullYear(),
+			curHourIndex: 0,
+			hoursList: ['05', '07', '08', '13', '17', '19', '20', '22'],
 
 			timepicker: {
-				currentHours: `${new Date().getHours()}`.length == 1 ? `0${new Date().getHours()}` : new Date().getHours(),
-				currentMinutes: this.minutesRound(new Date().getMinutes()),
+				currentHours: '05',
+				currentMinutes: '00',
 
-				selectedHours: this.date ? this.date.getHours() : null,
-				selectedMinutes: this.date ? this.date.getMinutes() : null
+				selectedHours: this.open && this.date ? (`${new Date(this.date).getHours()}`.length == 1 ? `0${new Date(this.date).getHours()}` : new Date(this.date).getHours()) : "05",
+				selectedMinutes: '00'
 			},
 
-			selectedMonth: this.date ? `${this.date.getMonth() + 1}`.length == 1 ? `0${this.date.getMonth() + 1}` : `${this.date.getMonth() + 1}` : null,
+			selectedMonth: this.date ? `${this.date.getMonth() + 1}`.length == 1 ? `0${this.date.getMonth() + 1}` : this.date.getMonth() + 1 : null,
 			selectedYear: this.date ? this.date.getFullYear() : null,
 
 			currentDay:	new Date().getDate(),
 			selectedDay: this.date ? this.date.getDate() : null,
 
-			weeks: []
+			weeks: [],
 		}
 	},
-	props: ['dateStart', 'dateFinish', 'time', 'autograph', 'range', 'date'],
+	props: ['dateStart', 'dateFinish', 'time', 'autograph', 'range', 'date', 'open'],
 	computed: {
 		daysCount() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear,
@@ -151,7 +153,9 @@ export default {
 			return monthName.calendar[month]
 		},
 		compDay() {
-			return new Date(`${this.selectedYear}-${this.date ? this.date.getMonth() + 1 : this.selectedMonth}-${this.selectedDay} 06:00`).getTime()
+			let length = `${this.selectedDay}`.length
+			
+			return new Date(`${this.selectedYear ? this.selectedYear : this.currentYear}-${this.date ? this.date.getMonth() + 1 : this.selectedMonth ? this.selectedMonth : this.currentMonth}-${length > 1 && length > 2 ? new Date(this.selectedDay).getDate() : this.selectedDay} ${this.timepicker.selectedHours}:00`).getTime()
 		},
 		year() {
 			let year = this.selectedYear ? this.selectedYear : this.currentYear
@@ -184,7 +188,7 @@ export default {
 			let year 		= this.selectedYear ? this.selectedYear : this.currentYear,
 					month 	= this.selectedMonth ? this.selectedMonth : this.currentMonth
 
-			this.selectedDay = new Date(`${year}-${month}-${day}`).getTime()
+			this.selectedDay = new Date(`${year}-${month}-${day} ${this.timepicker.selectedHours}:00`).getTime()
 
 			this.$emit('select', {
 				date: this.selectedDate
@@ -196,48 +200,71 @@ export default {
 			let year = this.selectedYear ? this.selectedYear - 1 : this.currentYear - 1,
 			date = new Date(year, 1, 0)
 
+
 			this.selectedYear = date.getFullYear()
 			this.getDays()
+			this.$emit('change', {
+				date: this.selectedDate
+			})
 		},
 		incraseYear() {
 			let year = this.selectedYear ? this.selectedYear + 1 : this.currentYear + 1,
 			date = new Date(year, 1, 0)
 
+
 			this.selectedYear = date.getFullYear()
 			this.getDays()
+			this.$emit('change', {
+				date: this.selectedDate
+			})
 		},
 		decraseMonth() {
 			let month = this.selectedMonth ? parseInt(this.selectedMonth, 10) - 1 : parseInt(this.currentMonth, 10) - 1,
 					year  = this.selectedYear ? this.selectedYear : this.currentYear,
 					date 	= new Date(year, month, 0)
-					
+	
+
 			if (month == 0) this.decraseYear()
 			this.selectedMonth = monthName.num[date.getMonth()]
 			this.getDays()
+			this.$emit('change', {
+				date: this.selectedDate
+			})
 		},
 		incraseMonth() {
 			let month = this.selectedMonth ? parseInt(this.selectedMonth, 10) + 1 : parseInt(this.currentMonth, 10) + 1,
 					year  = this.selectedYear ? this.selectedYear : this.currentYear,
 					unix 	= new Date(year, month, 0)
 
+
 			if (month == 13) this.incraseYear()
 			this.selectedMonth = monthName.num[unix.getMonth()]
 			this.getDays()
+			this.$emit('change', {
+				date: this.selectedDate
+			})
 		},
 		incraseHours() {
-			let hours = this.timepicker.selectedHours ? parseInt(this.timepicker.selectedHours, 10) + 1 : parseInt(this.timepicker.currentHours, 10) + 1
+			this.curHourIndex++
+			if (this.curHourIndex > this.hoursList.length - 1) {
+				this.curHourIndex = 0
+			}
+			this.timepicker.selectedHours = this.hoursList[this.curHourIndex]
 
-			this.timepicker.selectedHours = hours == 24 ? '00' : (`${hours}`.length == 1 ? `0${hours}` : hours)
+			this.getDays()
 
-			console.log(this.selectedDate)
 			this.$emit('select', {
 				date: this.selectedDate
 			})
 		},
 		decraseHours() {
-			let hours = this.timepicker.selectedHours ? parseInt(this.timepicker.selectedHours, 10) - 1 : parseInt(this.timepicker.currentHours, 10) - 1
+			this.curHourIndex--
+			if (this.curHourIndex < 0) {
+				this.curHourIndex = this.hoursList.length - 1
+			}
+			this.timepicker.selectedHours = this.hoursList[this.curHourIndex]
 
-			this.timepicker.selectedHours = hours == -1 ? '23' : (`${hours}`.length == 1 ? `0${hours}` : hours)
+			this.getDays()
 
 			this.$emit('select', {
 				date: this.selectedDate
@@ -246,63 +273,74 @@ export default {
 		minutesRound(x) {
 			return x%5<3 ? (x%5===0 ? x : Math.floor(x/5)*5) : Math.ceil(x/5)*5
 		},
-		incraseMinutes() {
-			let minutes = this.timepicker.selectedMinutes ? parseInt(this.timepicker.selectedMinutes,10) + 5 : this.minutesRound(this.timepicker.currentMinutes + 5)
-			
-			if (minutes == 60) {
-				this.incraseHours()
-			}
-			this.timepicker.selectedMinutes = minutes == 60 ? '00' : minutes
-
-			this.$emit('select', {
-				date: this.selectedDate
-			})
-		},
-		decraseMinutes() {
-			let minutes = this.timepicker.selectedMinutes ? parseInt(this.timepicker.selectedMinutes, 10) - 5 : this.minutesRound(this.timepicker.currentMinutes - 5)
-			
-			if (minutes == -5) {
-				this.timepicker.selectedMinutes = '55'
-				return this.decraseHours()
-			} 
-			this.timepicker.selectedMinutes = minutes == 0 ? '00' : minutes
-
-			this.$emit('select', {
-				date: this.selectedDate
-			})
-		},
 		getDays() {
-			let sortDays 		= {},
-					weeksCount 	= Math.ceil(this.daysCount/7),
-					year 				= this.selectedYear ? this.selectedYear : this.currentYear,
-					month 			= this.selectedMonth ? this.selectedMonth : this.currentMonth,
-					diff 				= 0
+			let sortDays 			= [],
+					year 					= this.selectedYear ? this.selectedYear : this.currentYear,
+					month 				= this.selectedMonth ? this.selectedMonth : this.currentMonth,
+					hours 				= `${this.timepicker.selectedHours}:00`,
+					lastDay 			= new Date(year, month, 0).getDate(),
+					lastDayWeek 	= new Date(`${year}-${month}-${lastDay}`).getDay(),
+					firstDayWeek 	= new Date(`${year}-${month}-1`).getDay(),
+					firstDayOffset,
+					weeksCount,
+					date = 1
 
-			for (var i = 1; i <= weeksCount; i++) {
-				let daysCount 	= i * 7,
-						y 					= 7 * (i - 1)
+			// Количество пустых клеток перед первым днём
+			if (firstDayWeek !== 0) {
+				firstDayOffset = firstDayWeek - 1
+			} else {
+				firstDayOffset = 6
+			}
 
-				sortDays[i] = []
-				if (i == 1 && new Date(`${year}-${month}-${y+1}`).getDay() !== 1 && this.range) {
-					let emptyDays = new Date(`${year}-${month}-${y+1}`).getDay() - 1
-					for (var z = 1; z <= emptyDays; z++) {
-						sortDays[i].unshift({unix: null, num: null})
-						y++
-						diff++
+			// Количество недель
+			weeksCount = (lastDay + firstDayOffset - lastDayWeek + 7) / 7
+
+			// Распихиваем дни по неделям
+			for (let w = 0; w <= weeksCount - 1; w++) {
+				sortDays[w] = []
+				if (w == 0) {
+					// Первая неделя месяца
+					for (let d = 1; d <= firstDayOffset; d++) {
+						sortDays[w].push({
+							unix: 0,
+							num: ""
+						})
 					}
-					// console.log(new Date(`${year}-${month}-${y+1}`).getDay())
+					for (let d = firstDayOffset+1; d <= 7; d++) {
+						sortDays[w].push({
+							unix: new Date(`${year}-${month}-${date} ${hours}`).getTime(),
+							num: date
+						})
+						date++
+					}
+				} else if (sortDays.length == weeksCount) {
+					// Последняя неделя месяца
+					for (let d = 1; d <= lastDayWeek; d++) {
+						sortDays[w].push({
+							unix: new Date(`${year}-${month}-${date} ${hours}`).getTime(),
+							num: date
+						})
+						date++
+					}
+					for (let d = lastDayWeek + 1; d <= 7; d++) {
+						sortDays[w].push({
+							unix: 0,
+							num: ""
+						})
+						date++
+					}
 				} else {
-					// diff = 0
-				}
-
-				for (y; y < daysCount; y++) {
-					let data = {
-						unix: new Date(`${year}-${month}-${y-diff+1}`).getTime(),
-						num: y-diff+1
+					// Все остальные недели :)
+					for (let d = 1; d <= 7; d++) {
+						sortDays[w].push({
+							unix: new Date(`${year}-${month}-${date} ${hours}`).getTime(),
+							num: date
+						})
+						date++
 					}
-					if (y+1 <= this.daysCount + diff) sortDays[i].push(data)
 				}
 			}
+			
 			this.weeks = sortDays
 		}
 	},
@@ -378,7 +416,7 @@ export default {
 						font-size: .625rem
 						font-weight: normal
 						color: $graphite1
-				td
+				td.calendar-td
 					padding: .2rem .1rem
 					border-radius: 4px
 					border: unset
@@ -398,20 +436,34 @@ export default {
 				line-height: 29px
 				color: $graphite4
 				display: flex
+				padding: 1.4rem 0
 				align-items: center
 				justify-content: center
+				position: relative
+				.day-part
+					font-size: 1rem
+					margin: 
+						top: .3rem
+						right: .5rem
 				.trigger
 					display: flex
 					align-items: center
 					justify-content: center
 					cursor: pointer
+					position: absolute
+					right: 0
+					left: 0
+					margin: 0 auto
+					img
+						height: 1rem!important
+						margin: unset!important
 					&.incrase
-						margin-bottom: .2rem
+						top: .2rem
 						img
 							transform: rotate(-90deg)
 
 					&.decrase
-						margin-top: .2rem
+						bottom: .2rem
 						img
 							transform: rotate(-90deg)
 

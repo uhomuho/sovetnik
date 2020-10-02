@@ -69,8 +69,8 @@ export default {
 			localStorage.setItem('filterType', payload)
 		},
 		setAllNewWaybillData (state, payload) {
-			if (payload) {
-				state.newWaybill = payload
+			if (payload.waybill) {
+				state.newWaybill = payload.waybill
 				localStorage.setItem('newWaybill', JSON.stringify(state.newWaybill))
 			}
 			
@@ -269,48 +269,48 @@ export default {
 				.then(res => {
 					state.loading = false
 					let waybills = res.data
-					for (var index in waybills) {
-						if (waybills[index].car !== null) {
-							let model = waybills[index].car.model
-							let registrationPlate = waybills[index].car.registrationPlate
-							if (model !== null) waybills[index].car.model = model.replace(registrationPlate, '').trim()
+					for (var index in waybills.listWaybill) {
+						if (waybills.listWaybill[index].car !== null) {
+							let model = waybills.listWaybill[index].car.model
+							let registrationPlate = waybills.listWaybill[index].car.registrationPlate
+							if (model !== null) waybills.listWaybill[index].car.model = model.replace(registrationPlate, '').trim()
 
-							for (var key in waybills[index]) {
-								let field = waybills[index][key]
+							for (var key in waybills.listWaybill[index]) {
+								let field = waybills.listWaybill[index][key]
 								if (typeof field == 'number') {
 									if (!Number.isInteger(field)) {
-										waybills[index][key] = waybills[index][key].toFixed(2).replace(".", ",")
+										waybills.listWaybill[index][key] = waybills.listWaybill[index][key].toFixed(2).replace(".", ",")
 									}
 								}
 							}
 						}
-						switch(waybills[index].status) {
+						switch(waybills.listWaybill[index].status) {
 							case "OPEN":
-								waybills[index].status = {}
-								waybills[index].status.name 	= "OPEN"
-								waybills[index].status.text 	= 'Открыт'
-								waybills[index].status.class 	= 'opened'
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name 	= "OPEN"
+								waybills.listWaybill[index].status.text 	= 'Открыт'
+								waybills.listWaybill[index].status.class 	= 'opened'
 								break
 							case "CHECK":
-								waybills[index].status = {}
-								waybills[index].status.name = "CHECK"
-								waybills[index].status.text 	= 'Проверка'
-								waybills[index].status.class 	= 'check'
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CHECK"
+								waybills.listWaybill[index].status.text 	= 'Проверка'
+								waybills.listWaybill[index].status.class 	= 'check'
 								break
 							case "CLOSE":
-								waybills[index].status = {}
-								waybills[index].status.name = "CLOSE"
-								waybills[index].status.text 	= 'Закрыт'
-								waybills[index].status.class 	= 'closed'
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CLOSE"
+								waybills.listWaybill[index].status.text 	= 'Закрыт'
+								waybills.listWaybill[index].status.class 	= 'closed'
 								break
 							case "ERROR":
-								waybills[index].status = {}
-								waybills[index].status.name = "CHECK"
-								waybills[index].status.text 	= 'Проверка'
-								waybills[index].status.class 	= 'check'
+								waybills.listWaybill[index].status = {}
+								waybills.listWaybill[index].status.name = "CHECK"
+								waybills.listWaybill[index].status.text 	= 'Проверка'
+								waybills.listWaybill[index].status.class 	= 'check'
 								break
 						}
-						waybills.size = waybills.length
+						waybills.size = waybills.listWaybill.length
 					}
 					commit('waybills', waybills)
 					localStorage.setItem('waybills', JSON.stringify(waybills))
@@ -323,7 +323,8 @@ export default {
 		async getNewWaybillData ({ commit }) {
 			await api.getNewWaybill()
 				.then(r => {
-					commit('setAllNewWaybillData', r.data)
+						r.data.of = new Date().getTime()
+					commit('setAllNewWaybillData', { waybill: r.data })
 				})
 				.catch(err => {
 					console.error(err)
@@ -337,24 +338,27 @@ export default {
 		async apiCloseWaybill({ commit }, id) {
 			await api.getCloseWaybill(id)
 				.then(r => {
-					if (r.data.status == "NEW") {
+					let waybill = r.data
+					if (r.data == "") {
+						Snackbar.open({
+							message: "Путевой лист не найден!"
+						})
+						commit('setCloseWaybill', null)
+					} else if (waybill.status == "NEW") {
 						Snackbar.open({
 							message: "Путевой лист ещё не открыт"
 						})
 						commit('setCloseWaybill', null)
-					} else if (r.data.status !== "CLOSE" && r.data.status !== "CHECK") {
-						commit('setCloseWaybill', r.data)
+					} else if (waybill.status !== "CLOSE" && waybill.status !== "CHECK") {
+						commit('setCloseWaybill', waybill)
 					} else {
 						Snackbar.open({
 							message: 'Путевой лист уже закрыт или находится на проверке'
 						})
 					}
 				})
-				.catch(() => {
-					Snackbar.open({
-						message: 'Путевой лист находится на проверке, уже закрыт или не существует'
-					})
-					// commit('setCloseWaybill', null)
+				.catch((err) => {
+					console.log(err)
 				})
 		},
 		async apiCarsFilter({ commit }) {
@@ -376,7 +380,7 @@ export default {
 		async apiLastOpenWb({ commit }, serial) {
 			api.getLastOpenWb(serial)
 				.then(r => {
-					if (r.data !== null) {
+					if (r.data.waybill !== null) {
 						commit('setCloseWaybill', r.data)
 						return
 					}
@@ -391,8 +395,10 @@ export default {
 			let date = new Date()
 
 			let from = new Date(date.setMonth(date.getMonth() - 3))
+			from = from.setHours(7, 0, 0)
 			commit('dateFrom', from)
 			let to = new Date(date.setMonth(date.getMonth() + 4))
+			to = to.setHours(19, 0, 0)
 			commit('dateTo', to)
 		}
 	}

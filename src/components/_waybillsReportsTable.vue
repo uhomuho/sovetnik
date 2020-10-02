@@ -1,7 +1,7 @@
 <template lang="pug">
 	div#reports_table(
 		@click='close')
-			table.table
+			table.table(v-if='waybills !== null' && waybills && waybills !== "null")
 				thead
 					tr
 						th.id №
@@ -104,7 +104,7 @@
 							b-skeleton(:animated='false')
 						td.status
 							b-skeleton(:animated='false')
-			.content(v-if='waybills.length == 0')
+			.content(v-if='!waybills && waybills == null')
 				h4.has-text-centered Нет подходящих данных
 </template>
 

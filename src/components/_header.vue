@@ -3,18 +3,19 @@
 		:class='show || login ? "active" : ""')
 		.container( @mousemove='showNav' @mouseout='hideNav' )
 			img( src="@/assets/icons/logo.svg" )
+			.user-data(v-if='user')
+				img.user( :src='user.avatar.replace(".png", ".svg")' )
+				.data
+					p {{ user.role }}:
+					p {{ user.name }}
+				p( @click='logout' ) Выход
 </template>
 
 <script>
 
 export default {
 	name: 'Header',
-	components: {},
-	props: ['show', 'login'],
-	data() {
-		return {
-		}
-	},
+	props: ['show', 'login', 'user'],
 	methods: {
 		showNav() {
 			this.$emit('show', {
@@ -25,9 +26,11 @@ export default {
 			this.$emit('hide', {
 				show: false
 			})
+		},
+		logout() {
+			localStorage.user = null
+			this.$router.push({ name: 'Login' })
 		}
-	},
-	mounted() {
 	}
 }
 
@@ -38,7 +41,7 @@ export default {
 		.container
 			display: flex
 			align-items: center
-			justify-content: flex-start
+			justify-content: space-between
 			min-width: unset
 			height: 5rem
 			width: 7.5rem
@@ -51,6 +54,44 @@ export default {
 			img
 				margin-left: 2.5rem
 				height: 2.5rem
+				margin-rigth: 2rem
+			.user-data
+				margin-right: 2.5rem
+				display: flex
+				align-items: center
+				justify-content: flex-end
+				img
+					height: 2rem
+				.data
+					display: flex
+					align-items: center
+					justify-content: space-between
+					margin: 
+						left: 1rem
+						right: 2rem
+					p
+						color: $graphite2
+						font-size: .875rem
+						cursor: auto
+						&+p
+							margin-left: .3rem
+						&::before
+							display: none
+				p
+					font-size: 1.125rem
+					line-height: 1.125rem
+					font-weight: bold
+					color: $orange4
+					position: relative
+					cursor: pointer
+					&::before
+						display: block
+						content: ""
+						position: absolute
+						top: 100%
+						width: 100%
+						height: 1px
+						background-color: $orange4
 		&.active
 			.container
 				min-width: 100%

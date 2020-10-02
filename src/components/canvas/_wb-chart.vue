@@ -162,7 +162,7 @@
 					:config='configItem && configItem.id == item.config.id ? configItem : item.config')
 				v-group(v-for='(item, key) in chart')
 					v-text(
-						v-if='item.maxFuelDown'
+						v-if='item.maxFuelDown && item.firstFuel !== 0 && item.lastFuel !== 0'
 						:config=`{
 							x: item.config.x + 12,
 							y: item.config.y - 24,
@@ -172,7 +172,7 @@
 							fill: "#F09A9B"
 						}`)
 					v-text(
-						v-if='item.minFuelDown'
+						v-if='item.minFuelDown && item.firstFuel !== 0 && item.lastFuel !== 0'
 						:config=`{
 							x: item.config.x + 12,
 							y: item.config.y,
@@ -182,19 +182,19 @@
 							fill: "#7FCCC6"
 						}`)
 					v-circle(
-						v-if='item.maxFuelDown'
+						v-if='item.maxFuelDown && item.firstFuel !== 0 && item.lastFuel !== 0'
 						:config=`{
 							x: item.config.x,
 							y: item.config.y,
-							radius: ((907/items.length)/2),
+							radius: items.length > 10 ? ((907/items.length)/2) : ((907/items.length)/80),
 							fill: "#F09A9B"
 						}`)
 					v-circle(
-						v-if='item.minFuelDown && chart'
+						v-if='item.minFuelDown && item.firstFuel !== 0 && item.lastFuel !== 0'
 						:config=`{
 							x: item.config.x,
 							y: item.config.y,
-							radius: ((907/items.length)/2),
+							radius: items.length > 10 ? ((907/items.length)/2) : ((907/items.length)/80),
 							fill: "#7FCCC6"
 						}`)
 				v-group
@@ -231,7 +231,7 @@ export default {
 				id: null,
 				x: null,
 				y: null,
-				radius: ((907/this.items.length)/2),
+				radius: this.items.length > 10 ? ((907/this.items.length)/2) : ((907/this.items.length)/80),
 				fill: "#F8981D"
 			},
 			configLine: {
@@ -259,7 +259,8 @@ export default {
 				width: null,
 				fill: "#FFFFFF",
 				shadowBlur: 10,
-				shadowOffset: { x: 0, y: 3 },
+				shadowOffsetX: 0,
+				shadowOffsetY: 3,
 				shadowColor: "rgba(176, 191, 198, 0.5)",
 				shadowOpacity: 0.5,
 				stroke: "#C4C4C4",
@@ -302,13 +303,13 @@ export default {
 			this.configPopUp.totalDistance = item.totalDistance.toFixed(2)
 			this.configPopUp.totalTime = this.$moment.utc(this.$moment(new Date(item.firstDT),"DD/MM/YYYY HH:mm:ss").diff(this.$moment(new Date(item.lastDT),"DD/MM/YYYY HH:mm:ss"))).format("mm")
 			this.configPopUp.width = 180
-			this.configPopUp.height = 200
+		this.configPopUp.height = 200
 			if (item.config.x < 449) {
 				this.configPopUp.x = item.config.x
 			} else {
 				this.configPopUp.x = item.config.x - this.configPopUp.width
 			}
-			if (item.config.y < 150) {
+			if (item.config.y < 130) {
 				this.configPopUp.y = item.config.y
 			} else {
 				this.configPopUp.y = item.config.y - this.configPopUp.height

@@ -7,6 +7,7 @@
 				margin-bottom: 0
 			.level
 				margin-left: .5rem
+				align-items: flex-end
 				.level-item
 					@include flex(flex-end, flex-end)
 					font-size: 2.25rem
@@ -15,6 +16,7 @@
 					position: relative
 					span.date-of 
 						cursor: pointer
+						line-height: 2.4rem
 					input
 						font-size: 3rem
 						color: $blue5
@@ -26,7 +28,7 @@
 							outline: none
 						&.id
 							min-width: 6rem
-							width: 6rem
+							width: 11rem
 							-moz-appearance:textfield
 							&::-webkit-outer-spin-button,
 							&::-webkit-inner-spin-button
@@ -79,8 +81,20 @@
 							justify-content: flex-start
 							border-bottom: 1px solid $grey2
 							position: relative
-
-							
+							.tag
+								position: absolute
+								left: .5rem
+								bottom: .1rem
+								cursor: pointer
+								.delete
+									display: none
+									max-height: 15px
+									max-width: 15px
+									min-height: 15px
+									min-width: 15px
+							img
+								height: .5rem
+								margin-right: .2rem
 							span, input
 								font-size: 1.125rem
 								line-height: 22px
@@ -101,7 +115,10 @@
 									left: 0
 									&.is-danger
 										color: $red4
-
+								&:disabled
+									background-color: #fff
+									&::placeholder
+										color: #fff
 
 							.dropdown
 								position: absolute
@@ -130,6 +147,12 @@
 						
 							&.plate
 								position: relative
+							.tag
+								cursor: pointer
+								&:hover
+									.delete
+										background-color: transparent
+										display: block
 
 
 						&.is-active
