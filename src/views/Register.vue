@@ -44,6 +44,9 @@ div
 						.control
 							input.input(
 							placeholder="Электронная почта")
+					.field
+						.control
+							button.button.is-pulled-right Регистрация
 
 </template>
 
@@ -74,6 +77,13 @@ export default {
 		left: 1.75rem
 	max-width: 100%
 	.column
+		&:first-of-type
+			img
+				margin: auto 0
+				position: absolute
+				top: 0
+				bottom: 0
+				left: -1rem
 		&:last-of-type
 			.column-container
 				.field

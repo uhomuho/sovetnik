@@ -9,6 +9,9 @@ export default {
 	login(params) {
 		return api().post('/login', params)
 	},
+	logout() {
+		return api().get('/logout')
+	},
 	getWaybills(params) {
 		let method 	= config.waybill
 		return api().get(`${method}

@@ -144,124 +144,142 @@ export default {
 				timezone = `${timezone}`.replace('+', '%2B')
 			}
 
-			switch(state.filterType) {
-
-				// Filter by year
-				case "year":
-					params = {
-						from: {
-							year: new Date().getFullYear(),
-							month: '01',
-							day: '01',
-							timezone: timezone
-						},
-						to: {
-							year: new Date().getFullYear(),
-							month: '12',
-							day: '31',
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
-
-				// Filter by yestarday
-				case "yest":
-					params = {
-						from: {
-							year: curYear,
-							month: curMonth,
-							day: curDay - 1,
-							timezone: timezone
-						},
-						to: {
-							year: curYear,
-							month: curMonth,
-							day: curDay - 1,
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
-
-				// Filter by month
-				case "month":
-					params = {
-						from: {
-							year: curYear,
-							month: curMonth,
-							day: '01',
-							timezone: timezone
-						},
-						to: {
-							year: curYear,
-							month: curMonth,
-							day: new Date(curYear, curMonth, 0).getDate(),
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
-
-				// Filter by today
-				case "today":
-					params = {
-						from: {
-							year: curYear,
-							month: curMonth,
-							day: curDay,
-							timezone: timezone
-						},
-						to: {
-							year: curYear,
-							month: curMonth,
-							day: curDay,
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
-
-				// Filter by week
-				case "week":
-					curWeekDay 	= new Date().getDay() - 1
-					weekStart 	= curDay - curWeekDay
-					weekEnd 		= weekStart + 6
-					params = {
-						from: {
-							year: curYear,
-							month: curMonth,
-							day: weekStart,
-							timezone: timezone
-						},
-						to: {
-							year: curYear,
-							month: curMonth,
-							day: weekEnd,
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
-
-				// Filter by range
-				case "range":
-					params 			= {
-						from: {
-							year: state.dateFrom.getFullYear(),
-							month: monthName.num[state.dateFrom.getMonth()],
-							day: `${state.dateFrom.getDate()}`.length == 1 ? `0${state.dateFrom.getDate()}` : state.dateFrom.getDate(),
-							timezone: timezone
-						},
-						to: {
-							year: state.dateTo.getFullYear(),
-							month: monthName.num[state.dateTo.getMonth()],
-							day: `${state.dateTo.getDate()}`.length == 1 ? `0${state.dateTo.getDate()}` : state.dateTo.getDate(),
-							timezone: timezone
-						},
-						page: page
-					}
-					break;
+			if (filter && filter.byMonth) {
+				params = {
+					from: {
+						year: filter.from.getFullYear(),
+						month: monthName.num[filter.from.getMonth()],
+						day: '01',
+						timezone: timezone
+					},
+					to: {
+						year: filter.from.getFullYear(),
+						month: monthName.num[filter.from.getMonth()],
+						day: new Date(filter.from.getFullYear(), monthName.num[filter.from.getMonth()],0).getDate(),
+						timezone: timezone
+					},
+					page: page
+				}
+			} else {
+				switch(state.filterType) {
+	
+					// Filter by year
+					case "year":
+						params = {
+							from: {
+								year: new Date().getFullYear(),
+								month: '01',
+								day: '01',
+								timezone: timezone
+							},
+							to: {
+								year: new Date().getFullYear(),
+								month: '12',
+								day: '31',
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+	
+					// Filter by yestarday
+					case "yest":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: curDay - 1,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: curDay - 1,
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+	
+					// Filter by month
+					case "month":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: '01',
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: new Date(curYear, curMonth, 0).getDate(),
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+	
+					// Filter by today
+					case "today":
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: curDay,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: curDay,
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+	
+					// Filter by week
+					case "week":
+						curWeekDay 	= new Date().getDay() - 1
+						weekStart 	= curDay - curWeekDay
+						weekEnd 		= weekStart + 6
+						params = {
+							from: {
+								year: curYear,
+								month: curMonth,
+								day: weekStart,
+								timezone: timezone
+							},
+							to: {
+								year: curYear,
+								month: curMonth,
+								day: weekEnd,
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+	
+					// Filter by range
+					case "range":
+						params 			= {
+							from: {
+								year: state.dateFrom.getFullYear(),
+								month: monthName.num[state.dateFrom.getMonth()],
+								day: `${state.dateFrom.getDate()}`.length == 1 ? `0${state.dateFrom.getDate()}` : state.dateFrom.getDate(),
+								timezone: timezone
+							},
+							to: {
+								year: state.dateTo.getFullYear(),
+								month: monthName.num[state.dateTo.getMonth()],
+								day: `${state.dateTo.getDate()}`.length == 1 ? `0${state.dateTo.getDate()}` : state.dateTo.getDate(),
+								timezone: timezone
+							},
+							page: page
+						}
+						break;
+				}
 			}
 			params.status = filter && filter.status ? filter.status.join(',') : null
 			params.serial = filter && filter.serial ? filter.serial : null

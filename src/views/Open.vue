@@ -143,7 +143,7 @@ div
 					.level
 						.level-left
 							.level-item
-								span Остаток при выдаче:
+								span Остаток при выезде:
 						.level-right
 							.level-item
 								input(

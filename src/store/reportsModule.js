@@ -236,7 +236,6 @@ export default {
 							chart[key].fuelDown = 0
 						} else {
 							chart[key].fuelDown = new Number(((chart[key].firstFuel-chart[key].lastFuel)/(chart[key].totalDistance)).toFixed(2))
-							console.log(chart[key].fuelDown)
 						}
 					}
 					

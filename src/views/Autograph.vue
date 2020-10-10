@@ -33,9 +33,9 @@
 									td(
 										@click='setFilter("range"), getAutographReport()'
 										:class='filter == "range" ? "active" : null') период
-							.level-item
-								.wrapper.from(
-									@click='openCalendar')
+							.level-item.trigger(
+								@click='openCalendar')
+								.wrapper.from
 									p {{ stringFrom }}
 									Calendar(
 										v-if='!invalidDate(dateFrom) && !invalidDate(dateTo)'
@@ -44,8 +44,7 @@
 										@dateFrom='setFrom'
 										:firstDate='new Date(dateFrom)'
 										:lastDate='new Date(dateTo)')
-								.wrapper.to(
-									@click='openCalendar')
+								.wrapper.to
 									p {{ stringTo }}
 
 				hr
@@ -113,7 +112,7 @@ export default {
 			}, 50)
 		},
 		openCalendar(e) {
-			if(e.target.matches('.wrapper.to *') || e.target.matches('.wrapper.from p') || e.target.matches('.wrapper.from')) {
+			if(!e.target.matches('.calendar *')) {
 				this.showCalendar = !this.showCalendar
 			}
 		},

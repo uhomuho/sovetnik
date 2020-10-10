@@ -253,7 +253,7 @@ export default {
 
 			this.getDays()
 
-			this.$emit('select', {
+			this.$emit('change', {
 				date: this.selectedDate
 			})
 		},
@@ -266,7 +266,7 @@ export default {
 
 			this.getDays()
 
-			this.$emit('select', {
+			this.$emit('change', {
 				date: this.selectedDate
 			})
 		},

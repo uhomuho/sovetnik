@@ -33,7 +33,6 @@ div
 								|{{ monthOf }}
 
 							.month-selector.dropdown(
-								v-if='false'
 								:class='showMonthSelector ? "" : "is-hidden"')
 								p(
 									v-for='month in monthList'
@@ -549,6 +548,7 @@ export default {
 		},
 		setMonth(num) {
 			this.setOf(new Date(`${this.yearOf}-${num}-${this.dayOf}`).getTime())
+			this.showMonthSelector = false
 		},
 		setYear(e) {
 			if (!(e.target.value < 1970)) {
@@ -588,6 +588,14 @@ export default {
 		},
 		open() {
 			if (!this.opened) {
+				this.waybill.mileageStart = `${this.waybill.mileageStart}`
+				if (this.waybill.mileageStart.includes(',')) {
+					this.waybill.mileageStart = parseInt(this.waybill.mileageStart.replace(",", "."))
+				}
+				this.waybill.fuelStart = `${this.waybill.fuelStart}`
+				if (this.waybill.fuelStart.includes(',')) {
+					this.waybill.fuelStart = parseInt(this.waybill.fuelStart.replace(",", "."))
+				}
 				api.createWaybill(this.waybill)
 					.then(r => {
 						if (r.data.message) {
@@ -752,11 +760,11 @@ export default {
 					font-size: .75rem
 					font-weight: bold
 					text-align: center
-					// color: $blue4
-					color: $graphite6
+					color: $blue4
 					width: 8.6rem
 					margin-right: 1rem
 					border-bottom: 1px solid $graphite2
+					cursor: pointer
 				.month-selector
 					p
 						font-size: .8rem

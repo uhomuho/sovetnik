@@ -2,19 +2,19 @@
 	#app
 		Header(
 			v-if='header'
-			:user='user'
+			:user='storedUser ? storedUser : user'
 			:show='show'
 			@show='showNav'
 			@hide='hideNav'
 			:login='isLogin')
 		.hero
 			Sidebar(
-				:user='user'
+				:user='storedUser ? storedUser : user'
 				v-if='!isLogin'
 				:routes='routes'
 				@show='showNav'
 				@hide='hideNav')
-			router-view#main(:user='user')
+			router-view#main(:user='storedUser ? storedUser : user')
 		.modal.is-active#error(v-if='timezoneError')
 			.modal-background
 			.modal-content
@@ -53,7 +53,7 @@ export default {
 			show: false,
 			isLogin: false,
 			user: null,
-			header: false
+			header: true
 		}
 	},
 	computed: {
@@ -64,6 +64,9 @@ export default {
 		...mapState('reports', {
 			repDateFrom: state => state.dateFrom,
 			repDateTo: state => state.dateTo
+		}),
+		...mapState('user', {
+			storedUser: state => state.user
 		})
 	},
 	methods: {
@@ -137,9 +140,14 @@ export default {
 			userData = userData.toString(CryptoJS.enc.Utf8)
 			userData = JSON.parse(userData)
 			this.user = userData
+		} else if (this.storedUser && this.storedUser !== 'null') {
+			this.user = this.storedUser
 		} else {
 			this.user = null
 		}
+	},
+	beforeDestroy() {
+		localStorage.user = null
 	}
 }
 </script>

@@ -7,7 +7,10 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 Vue.use(Vuex)
 
-Vue.use(Buefy)
+Vue.use(Buefy, {
+	defaultSnackbarDuration: 2000,
+	defaultSnackbarPosition: 'is-top-right'
+})
 
 // Router && Store
 import router from './router'

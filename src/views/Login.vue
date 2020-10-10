@@ -32,6 +32,9 @@
 									type="password"
 									placeholder="Пароль")
 							p.help.is-danger(v-if='errors.password') Заполните поле!
+						.field
+							b-checkbox( v-model='stayIn' )
+								|Оставаться в системе
 						.field.bottom
 							.control
 								router-link( to="/reset" ) Забыли пароль?
@@ -49,6 +52,7 @@
 <script>
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
+import { mapMutations } from 'vuex'
 import CryptoJS from 'crypto-js'
 
 export default {
@@ -60,6 +64,7 @@ export default {
 				username: null,
 				password: null
 			},
+			stayIn: false,
 			errors: {
 				username: false,
 				password: false
@@ -68,6 +73,9 @@ export default {
 	},
 	props: ['user'],
 	methods: {
+		...mapMutations('user', [
+			'setUser'
+		]),
 		login() {
 			if (!this.formData.username)
 				this.errors.username = true
@@ -87,11 +95,16 @@ export default {
 					let data = r.data
 					if ( data.status ) {
 						let user = data
-						let userData = JSON.stringify(user)
-						userData = CryptoJS.AES.encrypt(userData, 'kFLeCZ19095').toString()
-						localStorage.user = userData
-
-						this.$router.push('/waybills')
+						if (this.stayIn) {
+							let userData = JSON.stringify(user)
+							userData = CryptoJS.AES.encrypt(userData, 'kFLeCZ19095').toString()
+							localStorage.user = userData
+						} else {
+							this.setUser(data)
+						}
+						setTimeout(() => {
+							this.$router.push('/waybills')
+						}, 100)
 					} else {
 						if ( !data.status && data.error === "Bad Credentials" ) {
 							return Snackbar.open({
@@ -141,6 +154,8 @@ export default {
 							right: 20%
 						.field
 							position: relative
+							span.check
+								background-position: 50% 0
 							&+.field
 								margin-top: 2rem
 							.control

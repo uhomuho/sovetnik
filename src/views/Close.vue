@@ -85,12 +85,14 @@ div#main(@click='close')
 							td
 							td 
 								input(
-									v-model='waybill.fuelVolume')
+									v-model='waybill.fuelVolume'
+									placeholder='ЗАПОЛНИ!')
 						tr
 							td.title Выезд
 							td
 								input(
-									v-model='waybill.mileageStart')
+									v-model='waybill.mileageStart'
+									placeholder='ЗАПОЛНИ!')
 							td.date-start
 								span(
 									v-html='dateTimeStringStart'
@@ -104,7 +106,8 @@ div#main(@click='close')
 									@select='setTimeStart')
 							td 
 								input(
-									v-model='waybill.fuelStart')
+									v-model='waybill.fuelStart'
+									placeholder='ЗАПОЛНИ!')
 						tr
 							td.title Возвращение
 							td 

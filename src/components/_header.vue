@@ -2,7 +2,7 @@
 	header(
 		:class='show || login ? "active" : ""')
 		.container( @mousemove='showNav' @mouseout='hideNav' )
-			img( src="@/assets/icons/logo.svg" )
+			img.logo( src="@/assets/icons/logo.svg" )
 			.user-data(v-if='user')
 				img.user( :src='user.avatar.replace(".png", ".svg")' )
 				.data
@@ -12,11 +12,16 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex'
+import api from '@/api/apiActions'
 
 export default {
 	name: 'Header',
 	props: ['show', 'login', 'user'],
 	methods: {
+		...mapMutations('user', [
+			'setUser'
+		]),
 		showNav() {
 			this.$emit('show', {
 				show: true
@@ -28,7 +33,12 @@ export default {
 			})
 		},
 		logout() {
-			localStorage.user = null
+			if (localStorage.user && localStorage.user !== 'null') {
+				localStorage.user = null
+			} else {
+				this.setUser(null)
+			}
+			api.logout()
 			this.$router.push({ name: 'Login' })
 		}
 	}
@@ -51,10 +61,13 @@ export default {
 			position: fixed
 			z-index: 2
 			transition: all .2s ease-in-out
+			overflow: hidden
 			img
 				margin-left: 2.5rem
-				height: 2.5rem
+				height: 2.3rem
 				margin-rigth: 2rem
+				&.logo
+					margin-right: 4rem
 			.user-data
 				margin-right: 2.5rem
 				display: flex

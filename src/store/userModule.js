@@ -4,14 +4,14 @@ import { SnackbarProgrammatic as Snackbar } from 'buefy'
 
 export default {
 	namespaced: true,
-	store: {
+	state: {
 		user: null
 	},
 	getters: {
 		getUser: state => state.user
 	},
 	mutations: {
-		setUser: ( state, payload ) => {state.user = payload; console.log(state.user)}
+		setUser: ( state, payload ) => state.user = payload
 	},
 	actions: {
 		login: ({ commit }, data) => {
