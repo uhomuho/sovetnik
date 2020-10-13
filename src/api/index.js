@@ -1,5 +1,4 @@
 import axios from 'axios'
-import config from '../../public/config.js'
 import { ToastProgrammatic as Toast, SnackbarProgrammatic as Snackbar } from 'buefy'
 import router from '../router'
 import store from '../store'
@@ -9,7 +8,7 @@ axios.defaults.headers.common['Content-Type'] = 'application/json'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
 
 export default () => {
-	const url = config.backendUrl,
+	const url = 'http://tomcat.utyf.ru/',
 				dev = process.env.NODE_ENV == 'development' ? true : false,
 				axiosInstance = axios.create({
 					baseURL: `${dev ? 'https://uhomuhoproxy.herokuapp.com/'+url+'api/' : '/api/'}`

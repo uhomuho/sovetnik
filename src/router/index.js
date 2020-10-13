@@ -16,6 +16,7 @@ import Register from '@/views/Register'
 // -> Waybills
 import Waybills from '@/views/Waybills'
 import WaybillsList from '@/views/WaybillsList'
+import WaybillsListByCar from '@/views/WaybillsListByCar'
 import Open from '@/views/Open'
 import Close from '@/views/Close'
 import Preview from '@/views/Preview'
@@ -112,6 +113,34 @@ export default new Router({
 					menuIcon: 'waybills',
 					permission: 'watchWaybillsList',
 					component: WaybillsList,
+					hidden: false,
+					beforeEnter: (to, from, next) => {
+						let user = localStorage.user && localStorage.user !== 'null' ? decode(localStorage.user) : store.state.user.user && store.state.user.user !== 'null' ? store.state.user.user : null
+						
+						if (to.name == 'WaybillsList' && !isAuthentificated(user)) {
+							next({ name: 'Login' })
+							Snackbar.open({
+								message: 'Сначала войдите или зарегистрируйтесь',
+								actionText: null
+							})
+						} else if (to.name == 'WaybillsList' && !havePermissions('watchWaybillsList', user) ) {
+							next({ name: "Login"})
+							Snackbar.open({
+								message: 'Недостаточно прав доступа',
+								actionText: null
+							})
+						} else {
+							next()
+						}
+					},
+				},
+				{
+					path: 'cars',
+					name: 'WaybillsListBycars',
+					menuName: 'Путевые листы по авто.',
+					menuIcon: 'waybills',
+					permission: 'watchWaybillsList',
+					component: WaybillsListByCar,
 					hidden: false,
 					beforeEnter: (to, from, next) => {
 						let user = localStorage.user && localStorage.user !== 'null' ? decode(localStorage.user) : store.state.user.user && store.state.user.user !== 'null' ? store.state.user.user : null

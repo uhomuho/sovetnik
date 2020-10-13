@@ -28,7 +28,7 @@
 				:to='item.path ? `${route.path}/${item.path}` : route.path')
 					img( :src='user.can[item.permission].img.replace(".png", ".svg")' )
 					|{{item.menuName}}
-		.exit(@click='logout')
+		//- .exit(@click='logout')
 			|Выход
 </template>
 

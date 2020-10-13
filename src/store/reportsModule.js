@@ -1,6 +1,5 @@
 import api from '@/api/apiActions'
 import monthName from '@/month'
-import config from '../../public/config.js'
 
 function setLocalDataNull(data) {
 	localStorage.setItem(data, null)
@@ -59,16 +58,17 @@ export default {
 					curYear 		= new Date().getFullYear(),
 					curMonth 		= monthName.num[new Date().getMonth()],
 					curDay 			= new Date().getDate(),
-					timezone 		= config.global.timezone,
+					timezone 		= `${new Date().getTimezoneOffset()/60}`,
 					params,
 					curWeekDay,
 					weekStart,
 					weekEnd
-
+					
 			if ( `${timezone}`.includes('-') ) {
-				timezone = `${timezone}`.replace('-', '%2D')
+				timezone = `${timezone}`.replace('-', '')
+				timezone = `%2B0${timezone}:00`
 			} else {
-				timezone = `${timezone}`.replace('+', '%2B')
+				timezone = `%2D0${timezone}:00`
 			}
 
 			switch(state.filter) {

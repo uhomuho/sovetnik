@@ -1,6 +1,29 @@
 <template lang="pug">
 	div( @click='close' )
 		.section
+			.container(v-if='waybills')
+				.columns.is-flex.is-centered
+					.column.is-4.opened
+						.column-container
+							p.num {{ status.OPEN ? status.OPEN : 0 }}
+							p 
+								|СМЕН
+								br
+								|ОТКРЫТО
+					.column.is-4.check
+						.column-container
+							p.num {{ status.CHECK ? status.CHECK : 0 }}
+							p
+								|СМЕН НА
+								br
+								|ПРОВЕРКЕ
+					.column.is-4.closed
+						.column-container
+							p.num {{ status.CLOSE ? status.CLOSE : 0 }}
+							p
+								|СМЕН
+								br
+								|ЗАКРЫТО
 			.container
 				.level
 					.level-left
@@ -86,6 +109,14 @@ export default {
 		},
 		stringTo() {
 			return `по ${this.dateTo.getDate()} ${monthName.string[this.dateTo.getMonth()]} ${this.dateTo.getFullYear()}`
+		},
+		status() {
+			let statuses = this.waybills.totalStatus,
+					list = {}
+			for (let status of statuses) {
+				list[status[1]] = status[0]
+			}
+			return list
 		}
 	},
 	methods: {
@@ -143,38 +174,33 @@ export default {
 
 <style lang="sass" scoped>
 .section	
+	padding-top: 0
 	.container
-		&+.container
-			margin-top: 4.5rem
-
+		&:last-of-type
+			padding-top: 4rem
 		&:first-of-type
-			.columns
-				.happens
-					background-color: $happens
-					border-bottom-left-radius: 20px
-				.expired
-					background-color: $expired
-				.fixed
-					background-color: $fixed
-					border-bottom-right-radius: 20px
-
-				.column
-					.column-container
-						display: flex
-						flex-direction: column
-						align-items: center
-						justify-content: flex-start
-						padding: 1.5rem 0 1.125rem
-						.title
-							font-size: 5rem
-						.subtitle
-							font-size: 1.5rem
-
-						span
-							font-weight: bold
-							color: #fff
-							text-align: center
-							user-select: none
+			.opened
+				background: #BFE5E3
+				border-bottom-left-radius: 20px
+			.check
+				background: #FFE6C0
+			.closed
+				background: #F7CCCD
+				border-bottom-right-radius: 20px
+			.column
+				.column-container
+					display: flex
+					align-items: center
+					justify-content: center
+					padding: 2rem 0 1.5rem
+					p
+						font-size: 1.5rem
+						font-weight: bold
+						color: #fff
+						line-height: 1.6rem
+						&.num
+							font-size: 4rem
+							margin-right: .5rem
 
 		&:last-of-type
 			hr

@@ -1,7 +1,5 @@
-const config = require('./public/config.js')
-
 module.exports = {
-	publicPath: process.env.NODE_ENV == 'development' ? '/' : config.publicPath,
+	publicPath: '/',
 	css:  {
 		loaderOptions: {
 			sass: {

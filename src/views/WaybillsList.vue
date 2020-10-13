@@ -1,9 +1,6 @@
 <template lang="pug">
 	div( @click='close' )
 		.section
-			b-field
-				b-checkbox(v-model='byCars')
-					|По автомобилям 
 			.container(v-if='!byCars')
 				.level
 					.level-left

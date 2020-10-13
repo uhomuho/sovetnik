@@ -15,14 +15,6 @@
 				@show='showNav'
 				@hide='hideNav')
 			router-view#main(:user='storedUser ? storedUser : user')
-		.modal.is-active#error(v-if='timezoneError')
-			.modal-background
-			.modal-content
-				.content
-					h2.has-text-danger Ошибка!
-					p.has-text-white.has-text-weight-bold.is-size-5 {{ errorList[errorType].title }}
-					p.has-text-white.has-text-weight-bold.is-size-6 {{ errorList[errorType].action }} 
-					p.has-text-white.is-size-7 {{ errorList[errorType].file }} 
 </template>
 
 <script>
@@ -41,15 +33,6 @@ export default {
 		return {
 			breadcrumbs: this.$router.currentRoute.meta.breadcrumbs,
 			routes: this.$router.options.routes,
-			timezoneError: false,
-			errorType: "",
-			errorList: {
-				timezone: {
-					title: "Некорректно введён часовой пояс!",
-					action: "Повторите ввод и обновите страницу",
-					file: "config.js"
-				}
-			},
 			show: false,
 			isLogin: false,
 			user: null,
@@ -117,11 +100,6 @@ export default {
 		}
 	},
 	beforeMount() {
-		const timezoneCheck = /^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$/
-		if (!this.$timezone.match(timezoneCheck)) {
-			this.timezoneError = true
-			this.errorType = "timezone"
-		}
 
 		if (!this.dateFrom || !this.dateTo) {
 			this.setDates()

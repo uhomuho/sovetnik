@@ -59,10 +59,10 @@
 				td.fuel
 					table
 						tr
-							td {{ total.firstFuetl }}
+							td 
 							td {{ total.motionFuelUp }} 
 							td {{ total.motionFuelDown }}
-							td {{ total.lastFuel }}
+							td 
 				td.distance
 					table
 						tr

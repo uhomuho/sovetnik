@@ -23,7 +23,7 @@ table.table.is-fullwidth
 			td.fs {{ waybill.fuelStart }}
 			td.inc {{ waybill.trackFuelUp }}
 			td.out {{ waybill.trackFuelDown }}
-			td.fe {{ waybill.fuelEnd }}
+			td.fe {{ waybill.fuelFinish }}
 			td.mls {{ waybill.mileageStart }}
 			td.mlend {{ waybill.mileageFinish }}
 	tfoot

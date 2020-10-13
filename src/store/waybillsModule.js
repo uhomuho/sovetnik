@@ -1,7 +1,6 @@
 import monthName from '@/month'
 import api from '@/api/apiActions'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
-import config from '../../public/config.js'
 
 function setLocalDataNull(data) {
 	localStorage.setItem(data, null)
@@ -131,7 +130,7 @@ export default {
 			let curYear 		= new Date().getFullYear(),
 					curMonth 		= monthName.num[new Date().getMonth()],
 					curDay 			= new Date().getDate(),
-					timezone 		= config.global.timezone,
+					timezone 		= `${new Date().getTimezoneOffset()/60}`,
 					page 				= filter && filter.page ? filter.page : null,
 					params,
 					curWeekDay,
@@ -139,9 +138,10 @@ export default {
 					weekEnd
 
 			if ( `${timezone}`.includes('-') ) {
-				timezone = `${timezone}`.replace('-', '%2D')
+				timezone = `${timezone}`.replace('-', '')
+				timezone = `%2B0${timezone}:00`
 			} else {
-				timezone = `${timezone}`.replace('+', '%2B')
+				timezone = `%2D0${timezone}:00`
 			}
 
 			if (filter && filter.byMonth) {
