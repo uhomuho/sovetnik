@@ -71,7 +71,7 @@
 												label.checkbox(
 													:for='status.id')
 													|{{ status.text }}
-													img(:src='`${mode == "development" ? "/" : $userConfig.publicPath}icons/check.svg`')
+													img(:src='`/icons/check.svg`')
 
 					tbody(
 						v-if='waybills.listWaybill.length !== 0'
